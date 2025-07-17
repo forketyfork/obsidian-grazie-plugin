@@ -15,8 +15,6 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Grazie plugin settings" });
-
 		containerEl.createEl("h3", { text: "Authentication" });
 
 		new Setting(containerEl)
