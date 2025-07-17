@@ -1,4 +1,4 @@
-import { EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate, hoverTooltip, Tooltip } from "@codemirror/view";
 import { StateField, StateEffect, Extension, Transaction } from "@codemirror/state";
 import { Problem, ProblemCategory, CorrectionServiceType, ConfidenceLevel } from "../jetbrains-ai";
 import { MarkdownTextProcessor, ProcessedText } from "../services/text-processor";
@@ -141,6 +141,62 @@ function getProblemTitle(problem: Problem): string {
 	return title;
 }
 
+function getProblemSuggestions(problem: Problem): string[] {
+	return problem.fixes
+		.map(fix =>
+			fix.parts
+				.filter(part => part.type === "Change")
+				.map(part => part.text)
+				.join("")
+		)
+		.filter(suggestion => suggestion.trim().length > 0)
+		.slice(0, 3);
+}
+
+function applySuggestion(
+	view: EditorView,
+	state: GrammarDecorationsState,
+	problem: GrammarProblemWithPosition,
+	suggestion: string
+): void {
+	view.dispatch({ changes: { from: problem.from, to: problem.to, insert: suggestion } });
+	view.dispatch({ effects: setGrammarProblems.of([]) });
+}
+
+const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
+	const state = view.state.field(grammarDecorationsField, false);
+	if (!state) return null;
+	const problem = state.problems.find(p => pos >= p.from && pos <= p.to);
+	if (!problem) return null;
+
+	const dom = document.createElement("div");
+	dom.classList.add("grazie-plugin-tooltip");
+
+	const message = document.createElement("div");
+	message.textContent = problem.problem.message;
+	dom.appendChild(message);
+
+	const confidence = document.createElement("div");
+	confidence.classList.add("grazie-plugin-confidence");
+	confidence.textContent = "Confidence: " + (problem.problem.info.confidence === ConfidenceLevel.HIGH ? "High" : "Low");
+	dom.appendChild(confidence);
+
+	const suggestions = getProblemSuggestions(problem.problem);
+	if (suggestions.length > 0) {
+		const list = document.createElement("div");
+		suggestions.forEach(text => {
+			const btn = document.createElement("span");
+			btn.classList.add("grazie-plugin-suggestion");
+			btn.textContent = text;
+			btn.onclick = () => applySuggestion(view, state, problem, text);
+			list.appendChild(btn);
+		});
+		dom.appendChild(list);
+	}
+
+	return { pos: problem.from, above: true, create: () => ({ dom }) };
+});
+
 // View plugin for handling grammar decorations
 export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 	class {
@@ -159,7 +215,7 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 
 // Main extension that combines the state field and view plugin
 export function grammarDecorationsExtension(): Extension {
-	return [grammarDecorationsField, grammarDecorationsPlugin];
+	return [grammarDecorationsField, grammarDecorationsPlugin, grammarTooltip];
 }
 
 // Helper function to map grammar problems to editor positions
