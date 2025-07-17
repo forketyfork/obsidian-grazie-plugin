@@ -21,6 +21,7 @@ This project is in active development. The development infrastructure is complet
 - JetBrains AI Platform integration
 - Grammar and spell checking engine
 - Real-time error highlighting (basic debounced checking implemented)
+- Status bar spinner indicates active grammar checking
 - User interface components
 - Hover tooltips with error descriptions and suggestions
 

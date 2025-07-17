@@ -56,3 +56,22 @@
 	color: var(--text-muted);
 	margin-top: 4px;
 }
+
+/* Status bar spinner */
+.grazie-plugin-status-icon {
+	display: inline-block;
+	margin-left: 4px;
+}
+
+.grazie-plugin-spin {
+	animation: grazie-plugin-spin 1s linear infinite;
+}
+
+@keyframes grazie-plugin-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
