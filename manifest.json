@@ -1,0 +1,10 @@
+{
+	"id": "grazie-plugin",
+	"name": "Grazie Plugin",
+	"version": "0.1.0",
+	"author": "Forketyfork",
+	"minAppVersion": "0.15.0",
+	"description": "JetBrains Grazie integration",
+	"authorUrl": "https://github.com/forketyfork",
+	"isDesktopOnly": false
+}
