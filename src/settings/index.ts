@@ -17,16 +17,6 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		containerEl.createEl("h2", { text: "Grazie Plugin Settings" });
 
-		new Setting(containerEl)
-			.setName("Enable Grazie")
-			.setDesc("Enable or disable the Grazie plugin")
-			.addToggle(toggle =>
-				toggle.setValue(this.plugin.settings.enabled).onChange(async value => {
-					this.plugin.settings.enabled = value;
-					await this.plugin.saveSettings();
-				})
-			);
-
 		containerEl.createEl("h3", { text: "Authentication" });
 
 		new Setting(containerEl)

@@ -1,5 +1,4 @@
 export interface GraziePluginSettings {
-	enabled: boolean;
 	authToken: string;
 	serverUrl: string;
 	language: string;
@@ -17,7 +16,6 @@ export interface GraziePluginSettings {
 }
 
 export const DEFAULT_SETTINGS: GraziePluginSettings = {
-	enabled: true,
 	authToken: "",
 	serverUrl: "https://api.jetbrains.ai",
 	language: "en",
