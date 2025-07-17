@@ -7,6 +7,7 @@ This document outlines the implementation plan for integrating JetBrains AI Plat
 ## Research Findings
 
 ### JetBrains AI Platform
+
 - Provides **Grammar Error Correction (GEC)** service with advanced ML capabilities
 - Supports **English, German, Russian, Ukrainian** with different service levels
 - Uses three backend services: **MLEC** (ML-based), **SPELL** (dictionary-based), **RULE** (rule-based)
@@ -14,6 +15,7 @@ This document outlines the implementation plan for integrating JetBrains AI Plat
 - Offers both production and staging environments with regional availability
 
 ### Obsidian Plugin Development
+
 - Built with **TypeScript** and **CodeMirror 6** for editor extensions
 - Uses **Plugin** base class with `onload`/`onunload` lifecycle methods
 - Supports real-time editor decorations through **ViewPlugin** system
@@ -23,23 +25,27 @@ This document outlines the implementation plan for integrating JetBrains AI Plat
 ## Plugin Architecture Design
 
 ### Integration Approach
+
 The plugin will integrate directly with the **JetBrains AI Platform** using HTTP API calls. Since only Java and Python client libraries are available, we'll implement a custom TypeScript client that handles API configuration, authentication, and grammar correction requests.
 
 ### Core Components
 
 1. **JetBrains AI Platform Client**
+
    - Custom TypeScript HTTP client for API communication
    - Configuration management (staging/production, regional URLs)
    - Authentication token handling (user tokens for development)
    - Support for GEC v3 and v4 APIs (with markup exclusions)
 
 2. **Grammar Checking Engine**
+
    - Integration with JetBrains AI Platform GEC service
    - Support for English, German, Russian, Ukrainian
    - Three-tier checking: MLEC (ML), SPELL (dictionary), RULE (rules)
    - Sentence-based processing with problem detection
 
 3. **Obsidian Integration Layer**
+
    - Editor extensions for real-time checking
    - CodeMirror 6 view plugins for decorations
    - Settings panel for configuration
@@ -85,6 +91,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ## Implementation Checklist
 
 ### Phase 1: Foundation Setup
+
 - [x] Configure TypeScript build system (ESBuild with watch mode)
 - [x] Set up testing framework (Jest with jsdom environment)
 - [x] Configure ESLint and Prettier for code quality
@@ -101,6 +108,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [ ] Test basic GEC API connectivity
 
 ### Phase 2: Editor Integration
+
 - [ ] Create view plugin for real-time checking
 - [ ] Implement decoration system for highlighting errors
 - [ ] Add hover tooltips for error descriptions and confidence levels
@@ -110,6 +118,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [ ] Implement language detection for multilingual documents
 
 ### Phase 3: User Interface
+
 - [ ] Create CSS styles for error highlighting
 - [ ] Implement underline decorations for errors
 - [ ] Add different styles for grammar vs spelling errors
@@ -122,6 +131,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [ ] Implement exclusion patterns configuration
 
 ### Phase 4: Advanced Features
+
 - [ ] Implement debouncing for real-time checking
 - [ ] Add caching for processed text
 - [ ] Optimize for large documents
@@ -132,7 +142,8 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [ ] Add problem confidence level indicators
 
 ### Phase 5: Testing & Polish
-- [ ] Create __tests__ directory structure
+
+- [ ] Create **tests** directory structure
 - [ ] Write unit tests for JetBrains AI Platform client
 - [ ] Write unit tests for grammar checker service
 - [ ] Write unit tests for text processing
@@ -154,19 +165,23 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ## Development Dependencies
 
 ### Core Dependencies
+
 - **TypeScript**: Static typing and compilation
 - **Obsidian API**: Plugin framework and editor integration
 - **ESBuild**: Fast bundling and compilation
 
 ### Grammar Processing
+
 - **Custom JetBrains AI Platform client**: HTTP API integration
 - **Language detection library**: Auto-detect document language
 
 ### UI Components
+
 - **CodeMirror 6 extensions**: Editor decorations and interactions
 - **Obsidian UI components**: Settings panels and modals
 
 ### Testing & Build
+
 - **Jest**: Unit and integration testing
 - **ESLint**: Code linting and style checking
 - **Prettier**: Code formatting
@@ -174,16 +189,19 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ## Expected Challenges
 
 1. **Performance**: Real-time checking without lag
-   - *Solution*: Implement debouncing and incremental processing
+
+   - _Solution_: Implement debouncing and incremental processing
 
 2. **Accuracy**: Handling markdown-specific syntax
-   - *Solution*: Use exclusions API to ignore markdown syntax
+
+   - _Solution_: Use exclusions API to ignore markdown syntax
 
 3. **Authentication**: Managing user tokens securely
-   - *Solution*: Secure token storage and refresh handling
+
+   - _Solution_: Secure token storage and refresh handling
 
 4. **User Experience**: Non-intrusive error highlighting
-   - *Solution*: Subtle decorations with configurable styles and confidence levels
+   - _Solution_: Subtle decorations with configurable styles and confidence levels
 
 ## Success Metrics
 
@@ -193,6 +211,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - **Compatibility**: Works with existing Obsidian themes and plugins
 
 ## Resources
+
 - JetBrains AI Platform documentation: `.ignore/JetBrains AI Docs.md`
 - [Obsidian Plugin Development Documentation](https://docs.obsidian.md/Plugins/Getting+started/Build+a+plugin)
 - [JetBrains AI Platform Documentation](https://platform.jetbrains.ai/docs/getting-started)

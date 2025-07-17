@@ -9,6 +9,7 @@ An Obsidian plugin that integrates JetBrains AI Platform grammar correction func
 This project is in active development. The development infrastructure is complete, but the core functionality is still being implemented.
 
 ### What's Complete ✅
+
 - TypeScript build system with ESBuild
 - Testing framework with Jest
 - Code quality tools (ESLint, Prettier)
@@ -16,6 +17,7 @@ This project is in active development. The development infrastructure is complet
 - CSS build pipeline
 
 ### What's Being Developed 🔄
+
 - JetBrains AI Platform integration
 - Grammar and spell checking engine
 - Real-time error highlighting

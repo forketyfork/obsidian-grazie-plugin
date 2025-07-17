@@ -19,10 +19,10 @@ export interface GraziePluginSettings {
 
 export const DEFAULT_SETTINGS: GraziePluginSettings = {
 	enabled: true,
-	authToken: '',
-	serverUrl: 'https://api.jetbrains.ai',
+	authToken: "",
+	serverUrl: "https://api.jetbrains.ai",
 	useStaging: false,
-	language: 'en',
+	language: "en",
 	enabledServices: {
 		mlec: true,
 		spell: true,
@@ -36,11 +36,11 @@ export const DEFAULT_SETTINGS: GraziePluginSettings = {
 	minConfidenceLevel: 0.5,
 };
 
-export type SupportedLanguage = 'en' | 'de' | 'ru' | 'uk';
+export type SupportedLanguage = "en" | "de" | "ru" | "uk";
 
 export const SUPPORTED_LANGUAGES: Record<SupportedLanguage, string> = {
-	en: 'English',
-	de: 'German',
-	ru: 'Russian',
-	uk: 'Ukrainian',
+	en: "English",
+	de: "German",
+	ru: "Russian",
+	uk: "Ukrainian",
 };
