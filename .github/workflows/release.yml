@@ -28,10 +28,10 @@ jobs:
           fi
       - name: Create plugin archives
         run: |
-          mkdir -p obsidian-youtrack-fetcher
-          cp main.js manifest.json styles.css obsidian-youtrack-fetcher/
-          zip -r obsidian-youtrack-fetcher.zip obsidian-youtrack-fetcher/
-          tar -czf obsidian-youtrack-fetcher.tar.gz obsidian-youtrack-fetcher/
+          mkdir -p obsidian-grazie-plugin
+          cp main.js manifest.json styles.css obsidian-grazie-plugin/
+          zip -r obsidian-grazie-plugin.zip obsidian-grazie-plugin/
+          tar -czf obsidian-grazie-plugin.tar.gz obsidian-grazie-plugin/
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,4 +41,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            main.js manifest.json styles.css obsidian-youtrack-fetcher.zip obsidian-youtrack-fetcher.tar.gz
+            main.js manifest.json styles.css obsidian-grazie-plugin.zip obsidian-grazie-plugin.tar.gz

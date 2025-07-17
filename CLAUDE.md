@@ -78,3 +78,4 @@ This file provides guidance to AI agents when working with code in this reposito
 - Always implement only one step from the IMPLEMENTATION_PLAN.md and update this file by checking the respective checkbox
 - Assume that the token for the API https://api.jetbrains.ai/ is located in the environment variable `JETBRAINS_AI_TOKEN`
 - Include the implementation plan changes into the commit, only then do the commit
+- When writing the commit message, describe only what's been included into the commit, avoid mentioning anything that was discarded in the process.
