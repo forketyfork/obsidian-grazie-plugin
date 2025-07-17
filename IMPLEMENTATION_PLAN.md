@@ -102,7 +102,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [x] Create main plugin class extending Obsidian's Plugin
 - [x] Implement settings interface with authentication support
 - [x] Add basic configuration options
-- [ ] Implement configuration URL resolver
+- [x] Implement configuration URL resolver
 - [ ] Create HTTP client for JetBrains AI Platform
 - [ ] Implement authentication token handling
 - [ ] Test basic GEC API connectivity

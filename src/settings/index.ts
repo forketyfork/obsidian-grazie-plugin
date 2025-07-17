@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import GraziePlugin from "../main";
 import { SUPPORTED_LANGUAGES, SupportedLanguage } from "./types";
+import { ConfigurationUrlResolver } from "../jetbrains-ai/config-resolver";
 
 export class GrazieSettingTab extends PluginSettingTab {
 	plugin: GraziePlugin;
@@ -30,6 +31,21 @@ export class GrazieSettingTab extends PluginSettingTab {
 					})
 			);
 
+		containerEl.createEl("h3", { text: "Server configuration" });
+
+		new Setting(containerEl)
+			.setName("Configuration URL")
+			.setDesc("JetBrains AI platform configuration URL")
+			.addText(text =>
+				text
+					.setPlaceholder("https://www.jetbrains.com/config/JetBrainsAIPlatform.json")
+					.setValue(this.plugin.settings.configUrl)
+					.onChange(async value => {
+						this.plugin.settings.configUrl = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
 		new Setting(containerEl)
 			.setName("Server URL")
 			.setDesc("JetBrains AI platform server URL")
@@ -41,7 +57,41 @@ export class GrazieSettingTab extends PluginSettingTab {
 						this.plugin.settings.serverUrl = value;
 						await this.plugin.saveSettings();
 					})
-			);
+			)
+			.addButton(button => {
+				button
+					.setButtonText("Auto-resolve")
+					.setTooltip("Automatically resolve server URL from configuration")
+					.onClick(async () => {
+						button.setDisabled(true);
+						button.setButtonText("Resolving...");
+						try {
+							const resolver = new ConfigurationUrlResolver(
+								this.plugin.settings.configUrl,
+								this.plugin.settings.serverUrl
+							);
+							const result = await resolver.resolve();
+
+							if (result.isSuccess) {
+								this.plugin.settings.serverUrl = result.url;
+								await this.plugin.saveSettings();
+								this.display(); // Refresh the settings display
+							} else {
+								// Show warning but still use the fallback URL
+								this.plugin.settings.serverUrl = result.url;
+								await this.plugin.saveSettings();
+								this.display();
+								console.error("URL resolution warnings:", result.warnings);
+								console.error("URL resolution errors:", result.errors);
+							}
+						} catch (error) {
+							console.error("Failed to resolve URL:", error);
+						} finally {
+							button.setDisabled(false);
+							button.setButtonText("Auto-resolve");
+						}
+					});
+			});
 
 		containerEl.createEl("h3", { text: "Language settings" });
 

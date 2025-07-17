@@ -11,4 +11,7 @@ module.exports = {
 	coverageProvider: "v8",
 	coverageDirectory: "coverage",
 	collectCoverageFrom: ["src/**/*.ts", "!src/**/*.test.ts", "!src/__tests__/**", "!node_modules/**"],
+	moduleNameMapper: {
+		"^obsidian$": "<rootDir>/__mocks__/obsidian.ts",
+	},
 };

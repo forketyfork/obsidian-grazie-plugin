@@ -14,6 +14,7 @@ export default [
 			"!esbuild.config.mjs",
 			"!jest.config.js",
 			"!version-bump.mjs",
+			"__mocks__/",
 		],
 	},
 

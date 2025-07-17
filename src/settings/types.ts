@@ -2,6 +2,7 @@ export interface GraziePluginSettings {
 	authToken: string;
 	serverUrl: string;
 	language: string;
+	configUrl: string;
 	enabledServices: {
 		mlec: boolean;
 		spell: boolean;
@@ -19,6 +20,7 @@ export const DEFAULT_SETTINGS: GraziePluginSettings = {
 	authToken: "",
 	serverUrl: "https://api.jetbrains.ai",
 	language: "en",
+	configUrl: "https://www.jetbrains.com/config/JetBrainsAIPlatform.json",
 	enabledServices: {
 		mlec: true,
 		spell: true,
