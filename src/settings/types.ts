@@ -14,6 +14,7 @@ export interface GraziePluginSettings {
 	excludeLinks: boolean;
 	excludeBlockQuotes: boolean;
 	minConfidenceLevel: number;
+	autoDetectLanguage: boolean;
 }
 
 export const DEFAULT_SETTINGS: GraziePluginSettings = {
@@ -32,6 +33,7 @@ export const DEFAULT_SETTINGS: GraziePluginSettings = {
 	excludeLinks: true,
 	excludeBlockQuotes: false,
 	minConfidenceLevel: 0.5,
+	autoDetectLanguage: true,
 };
 
 export type SupportedLanguage = "en" | "de" | "ru" | "uk";

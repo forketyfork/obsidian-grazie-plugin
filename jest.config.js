@@ -13,5 +13,7 @@ module.exports = {
 	collectCoverageFrom: ["src/**/*.ts", "!src/**/*.test.ts", "!src/__tests__/**", "!node_modules/**"],
 	moduleNameMapper: {
 		"^obsidian$": "<rootDir>/__mocks__/obsidian.ts",
+		"^franc-min$": "<rootDir>/__mocks__/franc-min.ts",
 	},
+	transformIgnorePatterns: ["node_modules/(?!(franc-min|trigram-utils|n-gram|collapse-white-space)/)"],
 };

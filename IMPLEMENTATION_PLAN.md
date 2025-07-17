@@ -113,7 +113,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [x] Implement markdown text extraction with exclusions
 - [x] Handle code blocks and inline code exclusion
 - [x] Add sentence-based text processing
-- [ ] Implement language detection for multilingual documents
+- [x] Implement language detection for multilingual documents
 - [ ] Implement decoration system for highlighting errors
 - [ ] Add hover tooltips for error descriptions and confidence levels
 - [ ] Create view plugin for real-time checking

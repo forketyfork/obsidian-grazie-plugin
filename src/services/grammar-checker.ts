@@ -6,20 +6,24 @@ import {
 	ConfidenceLevel,
 } from "../jetbrains-ai";
 import { AuthenticationService } from "../jetbrains-ai/auth";
-import { GraziePluginSettings } from "../settings/types";
+import { GraziePluginSettings, SupportedLanguage } from "../settings/types";
 import { MarkdownTextProcessor } from "./text-processor";
+import { LanguageDetectorService, LanguageDetectionResult } from "./language-detector";
 
 export interface GrammarCheckResult {
 	problems: Problem[];
 	processedSentences: string[];
 	totalProblems: number;
 	hasErrors: boolean;
+	detectedLanguage?: SupportedLanguage;
+	languageDetectionResult?: LanguageDetectionResult;
 }
 
 export class GrammarCheckerService {
 	private client: JetBrainsAIClient | null = null;
 	private authService: AuthenticationService;
 	private textProcessor: MarkdownTextProcessor;
+	private languageDetector: LanguageDetectorService;
 
 	constructor(
 		private settings: GraziePluginSettings,
@@ -27,6 +31,7 @@ export class GrammarCheckerService {
 	) {
 		this.authService = authService;
 		this.textProcessor = new MarkdownTextProcessor();
+		this.languageDetector = new LanguageDetectorService();
 	}
 
 	async initialize(): Promise<void> {
@@ -67,6 +72,19 @@ export class GrammarCheckerService {
 				};
 			}
 
+			// Detect language from the extracted text if auto-detection is enabled
+			let languageDetectionResult: LanguageDetectionResult | undefined;
+			let languageToUse: SupportedLanguage = this.settings.language as SupportedLanguage;
+
+			if (this.settings.autoDetectLanguage) {
+				const textSamples = this.languageDetector.extractTextSamples(processedText.extractedText);
+				languageDetectionResult = this.languageDetector.detectLanguageFromSamples(
+					textSamples,
+					this.settings.language as SupportedLanguage
+				);
+				languageToUse = languageDetectionResult.detectedLanguage;
+			}
+
 			// Split extracted text into sentences
 			const sentences = this.splitIntoSentences(processedText.extractedText);
 
@@ -82,7 +100,7 @@ export class GrammarCheckerService {
 
 			const request = {
 				sentences,
-				language: this.mapLanguageCode(this.settings.language),
+				language: this.mapLanguageCode(languageToUse),
 				services: enabledServices,
 			};
 
@@ -90,7 +108,13 @@ export class GrammarCheckerService {
 
 			// The API returns {corrections: [...]} format
 			const corrections = (response as unknown as { corrections: SentenceWithProblems[] }).corrections ?? [];
-			return this.processGrammarResponse(corrections);
+			const result = this.processGrammarResponse(corrections);
+
+			// Add language detection information to the result
+			result.detectedLanguage = languageToUse;
+			result.languageDetectionResult = languageDetectionResult;
+
+			return result;
 		} catch (error) {
 			console.error("Grammar check failed:", error);
 			throw error;

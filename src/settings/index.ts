@@ -96,8 +96,18 @@ export class GrazieSettingTab extends PluginSettingTab {
 		containerEl.createEl("h3", { text: "Language settings" });
 
 		new Setting(containerEl)
-			.setName("Language")
-			.setDesc("Language for grammar checking")
+			.setName("Auto-detect language")
+			.setDesc("Automatically detect the language of the text being checked")
+			.addToggle(toggle =>
+				toggle.setValue(this.plugin.settings.autoDetectLanguage).onChange(async value => {
+					this.plugin.settings.autoDetectLanguage = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Default language")
+			.setDesc("Default language for grammar checking (used when auto-detection is disabled or fails)")
 			.addDropdown(dropdown => {
 				Object.entries(SUPPORTED_LANGUAGES).forEach(([code, name]) => {
 					dropdown.addOption(code, name);

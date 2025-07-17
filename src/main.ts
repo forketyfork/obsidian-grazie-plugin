@@ -72,10 +72,12 @@ export default class GraziePlugin extends Plugin {
 
 			// Display results
 			if (result.hasErrors) {
-				new Notice(`Found ${result.totalProblems} grammar issue(s) in ${activeFile.name}`);
+				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
+				new Notice(`Found ${result.totalProblems} grammar issue(s) in ${activeFile.name}${languageInfo}`);
 				console.error("Grammar check results:", result);
 			} else {
-				new Notice(`No grammar issues found in ${activeFile.name}`);
+				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
+				new Notice(`No grammar issues found in ${activeFile.name}${languageInfo}`);
 			}
 		} catch (error) {
 			console.error("Grammar check failed:", error);
