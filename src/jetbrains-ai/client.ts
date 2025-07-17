@@ -216,7 +216,13 @@ export class JetBrainsAIClient {
 			}
 
 			if (response.status < 200 || response.status >= 300) {
-				throw new Error(`HTTP ${response.status}: ${response.text}`);
+				throw new Error(`HTTP ${response.status}: Request failed`);
+			}
+
+			// Validate content type
+			const contentType = response.headers["content-type"] || "";
+			if (!contentType.includes("application/json")) {
+				throw new Error(`Expected JSON response, got ${contentType}`);
 			}
 
 			return response.json as unknown;

@@ -79,6 +79,7 @@ describe("JetBrainsAIClient", () => {
 
 			mockRequestUrl.mockResolvedValue({
 				status: 200,
+				headers: { "content-type": "application/json" },
 				json: mockResponse,
 			});
 
@@ -117,6 +118,7 @@ describe("JetBrainsAIClient", () => {
 
 			mockRequestUrl.mockResolvedValue({
 				status: 401,
+				headers: { "content-type": "application/json" },
 				text: "Unauthorized",
 			});
 
@@ -141,6 +143,7 @@ describe("JetBrainsAIClient", () => {
 
 			mockRequestUrl.mockResolvedValue({
 				status: 429,
+				headers: { "content-type": "application/json" },
 				text: "Rate limit exceeded",
 			});
 

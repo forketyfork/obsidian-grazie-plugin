@@ -77,16 +77,30 @@ export class GrammarCheckerService {
 			let languageToUse: SupportedLanguage = this.settings.language as SupportedLanguage;
 
 			if (this.settings.autoDetectLanguage) {
-				const textSamples = this.languageDetector.extractTextSamples(processedText.extractedText);
-				languageDetectionResult = this.languageDetector.detectLanguageFromSamples(
-					textSamples,
-					this.settings.language as SupportedLanguage
-				);
-				languageToUse = languageDetectionResult.detectedLanguage;
+				try {
+					const textSamples = this.languageDetector.extractTextSamples(processedText.extractedText);
+					languageDetectionResult = this.languageDetector.detectLanguageFromSamples(
+						textSamples,
+						this.settings.language as SupportedLanguage
+					);
+					languageToUse = languageDetectionResult.detectedLanguage;
+				} catch (error) {
+					console.error("Language detection failed, using default language:", error);
+				}
 			}
 
 			// Split extracted text into sentences
 			const sentences = this.splitIntoSentences(processedText.extractedText);
+
+			// Check for reasonable limits
+			if (sentences.length > 100) {
+				throw new Error("Document too large for grammar checking (> 100 sentences)");
+			}
+
+			const totalLength = sentences.join(" ").length;
+			if (totalLength > 50000) {
+				throw new Error("Document too large for grammar checking (> 50,000 characters)");
+			}
 
 			const enabledServices: CorrectionServiceType[] = [];
 			if (this.settings.enabledServices.mlec) enabledServices.push(CorrectionServiceType.MLEC);
@@ -106,8 +120,18 @@ export class GrammarCheckerService {
 
 			const response = await this.client.checkGrammar(request);
 
-			// The API returns {corrections: [...]} format
-			const corrections = (response as unknown as { corrections: SentenceWithProblems[] }).corrections ?? [];
+			// Validate and process API response
+			let corrections: SentenceWithProblems[] = [];
+			if (response && typeof response === "object" && "corrections" in response) {
+				const responseObj = response as { corrections: unknown };
+				if (Array.isArray(responseObj.corrections)) {
+					corrections = responseObj.corrections as SentenceWithProblems[];
+				}
+			} else if (Array.isArray(response)) {
+				// Some API versions return array directly
+				corrections = response;
+			}
+
 			const result = this.processGrammarResponse(corrections);
 
 			// Add language detection information to the result

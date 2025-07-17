@@ -13,8 +13,14 @@ export default class GraziePlugin extends Plugin {
 		await this.loadSettings();
 
 		// Initialize services
-		this.authService = AuthenticationService.create(this);
-		this.grammarChecker = new GrammarCheckerService(this.settings, this.authService);
+		try {
+			this.authService = AuthenticationService.create(this);
+			this.grammarChecker = new GrammarCheckerService(this.settings, this.authService);
+		} catch (error) {
+			console.error("Failed to initialize Grazie plugin services:", error);
+			new Notice("Failed to initialize Grazie plugin. Check console for details.");
+			return;
+		}
 
 		this.addSettingTab(new GrazieSettingTab(this.app, this));
 
@@ -32,8 +38,18 @@ export default class GraziePlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		const data = (await this.loadData()) as Partial<GraziePluginSettings> | null;
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
+		try {
+			const data: unknown = await this.loadData();
+			if (data && typeof data === "object") {
+				const validatedData = data as Record<string, unknown>;
+				this.settings = Object.assign({}, DEFAULT_SETTINGS, validatedData);
+			} else {
+				this.settings = Object.assign({}, DEFAULT_SETTINGS);
+			}
+		} catch (error) {
+			console.error("Failed to load settings:", error);
+			this.settings = Object.assign({}, DEFAULT_SETTINGS);
+		}
 	}
 
 	async saveSettings() {

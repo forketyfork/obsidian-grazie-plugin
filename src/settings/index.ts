@@ -29,6 +29,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 						this.plugin.settings.authToken = value;
 						await this.plugin.saveSettings();
 					})
+					.inputEl.setAttribute("type", "password")
 			);
 
 		containerEl.createEl("h3", { text: "Server configuration" });
@@ -154,14 +155,14 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Checking delay")
-			.setDesc("Delay in milliseconds before checking text")
+			.setDesc("Delay in milliseconds before checking text (0-10000)")
 			.addText(text =>
 				text
 					.setPlaceholder("500")
 					.setValue(String(this.plugin.settings.checkingDelay))
 					.onChange(async value => {
 						const delay = parseInt(value);
-						if (!isNaN(delay) && delay >= 0) {
+						if (!isNaN(delay) && delay >= 0 && delay <= 10000) {
 							this.plugin.settings.checkingDelay = delay;
 							await this.plugin.saveSettings();
 						}
