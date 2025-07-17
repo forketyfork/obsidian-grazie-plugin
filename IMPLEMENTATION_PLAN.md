@@ -143,18 +143,18 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 
 ### Phase 3: User Interface (Medium Priority)
 
-- [ ] **Create CSS styles for error highlighting** (CRITICAL)
+- [x] **Create CSS styles for error highlighting** (CRITICAL)
   - Add `.grazie-plugin-grammar-error` class with red wavy underline
   - Add `.grazie-plugin-spelling-error` class with blue wavy underline
   - Create `.grazie-plugin-error-high-confidence` and `.grazie-plugin-error-low-confidence` variants
   - Style tooltip containers with `.grazie-plugin-tooltip` class
   - Ensure styles work with both light and dark Obsidian themes
-- [ ] Implement underline decorations for errors with different styles
+- [x] Implement underline decorations for errors with different styles
   - Use `Decoration.mark()` with `class` attribute for CSS styling
   - Map `CorrectionServiceType` to appropriate CSS classes
   - Apply confidence level styling based on `ConfidenceLevel` enum
   - Create decoration specs for grammar, spelling, and mixed errors
-- [ ] Add different styles for grammar vs spelling errors
+- [x] Add different styles for grammar vs spelling errors
   - Grammar errors: red wavy underline (`text-decoration: underline wavy red`)
   - Spelling errors: blue wavy underline (`text-decoration: underline wavy blue`)
   - Mixed errors: purple wavy underline for combined issues
