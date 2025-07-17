@@ -1,13 +1,16 @@
-import { Plugin, Notice } from "obsidian";
+import { Plugin, Notice, MarkdownView } from "obsidian";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
 import { GrammarCheckerService } from "./services/grammar-checker";
 import { AuthenticationService } from "./jetbrains-ai/auth";
+import { EditorDecoratorService } from "./services/editor-decorator";
+import { grammarDecorationsExtension } from "./editor/decorations";
 
 export default class GraziePlugin extends Plugin {
 	settings: GraziePluginSettings;
 	private grammarChecker: GrammarCheckerService | null = null;
 	private authService: AuthenticationService | null = null;
+	private editorDecorator: EditorDecoratorService | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -16,11 +19,15 @@ export default class GraziePlugin extends Plugin {
 		try {
 			this.authService = AuthenticationService.create(this);
 			this.grammarChecker = new GrammarCheckerService(this.settings, this.authService);
+			this.editorDecorator = new EditorDecoratorService(this.app);
 		} catch (error) {
 			console.error("Failed to initialize Grazie plugin services:", error);
 			new Notice("Failed to initialize Grazie plugin. Check console for details.");
 			return;
 		}
+
+		// Register CodeMirror extension for grammar decorations
+		this.registerEditorExtension(grammarDecorationsExtension());
 
 		this.addSettingTab(new GrazieSettingTab(this.app, this));
 
@@ -69,7 +76,7 @@ export default class GraziePlugin extends Plugin {
 			return;
 		}
 
-		if (!this.grammarChecker || !this.authService) {
+		if (!this.grammarChecker || !this.authService || !this.editorDecorator) {
 			new Notice("Grammar checker not initialized");
 			return;
 		}
@@ -86,11 +93,22 @@ export default class GraziePlugin extends Plugin {
 			// Check the text
 			const result = await this.grammarChecker.checkText(content);
 
+			// Apply decorations to the active editor
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (activeView?.editor) {
+				// Get the CodeMirror EditorView
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+				const editorView = (activeView.editor as any).cm;
+				if (editorView) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					await this.editorDecorator.applyGrammarResults(editorView, activeFile, result);
+				}
+			}
+
 			// Display results
 			if (result.hasErrors) {
 				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
 				new Notice(`Found ${result.totalProblems} grammar issue(s) in ${activeFile.name}${languageInfo}`);
-				console.error("Grammar check results:", result);
 			} else {
 				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
 				new Notice(`No grammar issues found in ${activeFile.name}${languageInfo}`);

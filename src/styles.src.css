@@ -1,16 +1,31 @@
 /* Grazie Plugin Styles */
 
 .grazie-plugin-error {
-	border-bottom: 2px solid var(--text-error);
 	position: relative;
+	cursor: help;
 }
 
-.grazie-plugin-error-grammar {
-	border-bottom: 2px solid var(--text-warning);
+/* Grammar errors - red wavy underline */
+.grazie-plugin-grammar-error {
+	text-decoration: underline wavy var(--text-error);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 2px;
 }
 
-.grazie-plugin-error-spell {
-	border-bottom: 2px solid var(--text-error);
+/* Spelling errors - blue wavy underline */
+.grazie-plugin-spelling-error {
+	text-decoration: underline wavy var(--text-accent);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 2px;
+}
+
+/* Confidence level variations */
+.grazie-plugin-error-high-confidence {
+	opacity: 1;
+}
+
+.grazie-plugin-error-low-confidence {
+	opacity: 0.7;
 }
 
 .grazie-plugin-tooltip {

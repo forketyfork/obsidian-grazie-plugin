@@ -29,6 +29,9 @@
 	"author": "Forketyfork",
 	"license": "MIT",
 	"devDependencies": {
+		"@codemirror/state": "^6.5.2",
+		"@codemirror/tooltip": "^0.19.16",
+		"@codemirror/view": "^6.38.1",
 		"@eslint/eslintrc": "^3.3.1",
 		"@eslint/js": "^9.27.0",
 		"@types/jest": "^29.5.14",

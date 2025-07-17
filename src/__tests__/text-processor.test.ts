@@ -153,6 +153,13 @@ Another paragraph with ![image](img.jpg) and more text.`;
 
 			expect(result).toBe("Item 1\nItem 2\nNumbered item");
 		});
+
+		it("should remove list markers from space-separated text", () => {
+			const text = "- Item 1 - Item 2 1. Numbered item";
+			const result = processor.cleanMarkdownFormatting(text);
+
+			expect(result).toBe("Item 1 Item 2 Numbered item");
+		});
 	});
 
 	describe("mapProcessedPositionToOriginal", () => {

@@ -304,9 +304,12 @@ export class MarkdownTextProcessor {
 				.replace(/~~([^~]+)~~/g, "$1")
 				// Remove blockquotes
 				.replace(/^>\s*/gm, "")
-				// Remove list markers
+				// Remove list markers at the beginning of lines
 				.replace(/^\s*[-*+]\s+/gm, "")
 				.replace(/^\s*\d+\.\s+/gm, "")
+				// Remove list markers that appear after spaces (originally newlines)
+				.replace(/\s+[-*+]\s+/g, " ")
+				.replace(/\s+\d+\.\s+/g, " ")
 				// Remove horizontal rules
 				.replace(/^---+$/gm, "")
 				// Clean up whitespace but preserve newlines
