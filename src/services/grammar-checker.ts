@@ -168,7 +168,7 @@ export class GrammarCheckerService {
 				const nextChar = cleanedText[i + 1];
 				const charAfterSpace = cleanedText[i + 2];
 
-				if (nextChar === " " && charAfterSpace && /[A-Z]/.test(charAfterSpace)) {
+				if ((nextChar === " " || nextChar === "\n") && charAfterSpace && /[A-Z]/.test(charAfterSpace)) {
 					// This is a sentence boundary
 					sentences.push(currentSentence.trim());
 					currentSentence = "";

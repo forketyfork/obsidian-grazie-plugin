@@ -1,4 +1,4 @@
-import { Plugin, Notice, MarkdownView } from "obsidian";
+import { Plugin, MarkdownView } from "obsidian";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
 import { GrammarCheckerService } from "./services/grammar-checker";
@@ -12,6 +12,8 @@ export default class GraziePlugin extends Plugin {
 	private grammarChecker: GrammarCheckerService | null = null;
 	private authService: AuthenticationService | null = null;
 	private editorDecorator: EditorDecoratorService | null = null;
+	private statusBarItem: HTMLElement | null = null;
+	private statusIcon: HTMLElement | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -23,9 +25,13 @@ export default class GraziePlugin extends Plugin {
 			this.editorDecorator = new EditorDecoratorService(this.app);
 		} catch (error) {
 			console.error("Failed to initialize Grazie plugin services:", error);
-			new Notice("Failed to initialize Grazie plugin. Check console for details.");
 			return;
 		}
+
+		this.statusBarItem = this.addStatusBarItem();
+		this.statusIcon = document.createElement("span");
+		this.statusIcon.classList.add("grazie-plugin-status-icon");
+		this.statusBarItem.appendChild(this.statusIcon);
 
 		// Register CodeMirror extensions
 		this.registerEditorExtension(grammarDecorationsExtension());
@@ -69,23 +75,20 @@ export default class GraziePlugin extends Plugin {
 		const activeFile = this.app.workspace.getActiveFile();
 
 		if (!activeFile) {
-			new Notice("No active file to check");
 			return;
 		}
 
 		if (!activeFile.path.endsWith(".md")) {
-			new Notice("Only markdown files are supported");
 			return;
 		}
 
 		if (!this.grammarChecker || !this.authService || !this.editorDecorator) {
-			new Notice("Grammar checker not initialized");
 			return;
 		}
 
 		try {
 			const content = await this.app.vault.cachedRead(activeFile);
-			new Notice(`Grammar check started for ${activeFile.name}`);
+			this.statusIcon?.classList.add("grazie-plugin-spin");
 
 			// Initialize grammar checker if needed
 			if (!this.grammarChecker.isInitialized()) {
@@ -107,21 +110,11 @@ export default class GraziePlugin extends Plugin {
 				}
 			}
 
-			// Display results
-			if (result.hasErrors) {
-				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
-				new Notice(`Found ${result.totalProblems} grammar issue(s) in ${activeFile.name}${languageInfo}`);
-			} else {
-				const languageInfo = result.detectedLanguage ? ` (${result.detectedLanguage})` : "";
-				new Notice(`No grammar issues found in ${activeFile.name}${languageInfo}`);
-			}
+			// Display results (status icon only)
 		} catch (error) {
 			console.error("Grammar check failed:", error);
-			if (error instanceof Error) {
-				new Notice(`Grammar check failed: ${error.message}`);
-			} else {
-				new Notice("Grammar check failed");
-			}
+		} finally {
+			this.statusIcon?.classList.remove("grazie-plugin-spin");
 		}
 	}
 }

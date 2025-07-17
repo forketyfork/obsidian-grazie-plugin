@@ -56,16 +56,7 @@ function createRealtimePlugin(plugin: GraziePlugin) {
 				scheduleCheck(view, plugin);
 			},
 		}),
-		{
-			eventHandlers: {
-				keyup() {
-					(this as unknown as { schedule: () => void }).schedule();
-				},
-				paste() {
-					(this as unknown as { schedule: () => void }).schedule();
-				},
-			},
-		}
+		{}
 	);
 }
 
