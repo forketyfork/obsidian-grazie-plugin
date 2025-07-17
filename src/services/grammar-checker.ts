@@ -60,13 +60,24 @@ export class GrammarCheckerService {
 			if (this.settings.enabledServices.spell) enabledServices.push(CorrectionServiceType.SPELL);
 			if (this.settings.enabledServices.rule) enabledServices.push(CorrectionServiceType.RULE);
 
-			const response = await this.client.checkGrammar({
+			// Ensure we have at least one service enabled
+			if (enabledServices.length === 0) {
+				enabledServices.push(CorrectionServiceType.SPELL);
+			}
+
+			const request = {
 				sentences,
 				language: this.mapLanguageCode(this.settings.language),
 				services: enabledServices,
-			});
+			};
 
-			return this.processGrammarResponse(response);
+			// console.error("Grammar check request:", request);
+
+			const response = await this.client.checkGrammar(request);
+
+			// The API returns {corrections: [...]} format
+			const corrections = (response as unknown as { corrections: SentenceWithProblems[] }).corrections ?? [];
+			return this.processGrammarResponse(corrections);
 		} catch (error) {
 			console.error("Grammar check failed:", error);
 			throw error;
@@ -75,11 +86,12 @@ export class GrammarCheckerService {
 
 	private splitIntoSentences(text: string): string[] {
 		// Basic sentence splitting - will be improved later with proper markdown handling
-		return text
-			.split(/[.!?]+/)
-			.map(sentence => sentence.trim())
-			.filter(sentence => sentence.length > 0)
-			.map(sentence => sentence + ".");
+		// For now, let's send the entire text as one sentence to avoid issues
+		const cleanedText = text.trim();
+		if (!cleanedText) {
+			return [];
+		}
+		return [cleanedText];
 	}
 
 	private mapLanguageCode(language: string): string {

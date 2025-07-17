@@ -150,12 +150,7 @@ export class JetBrainsAIClient {
 
 		const response = await this.makeRequest(endpoint, {
 			sentences: request.sentences,
-			language: request.language,
-			services: request.services ?? [
-				CorrectionServiceType.MLEC,
-				CorrectionServiceType.SPELL,
-				CorrectionServiceType.RULE,
-			],
+			lang: request.language,
 		});
 
 		return response as SentenceWithProblems[];

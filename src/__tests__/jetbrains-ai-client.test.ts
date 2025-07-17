@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { JetBrainsAIClient, CorrectionServiceType } from "../jetbrains-ai/client";
+import { JetBrainsAIClient } from "../jetbrains-ai/client";
 import { ConfigurationUrlResolver } from "../jetbrains-ai/config-resolver";
 import { ObsidianAuthTokenManager, PluginWithSettings } from "../jetbrains-ai/auth";
 
@@ -100,8 +100,7 @@ describe("JetBrainsAIClient", () => {
 				},
 				body: JSON.stringify({
 					sentences: ["This is a test sentence."],
-					language: "ENGLISH",
-					services: [CorrectionServiceType.MLEC, CorrectionServiceType.SPELL, CorrectionServiceType.RULE],
+					lang: "ENGLISH",
 				}),
 				throw: false,
 			});
