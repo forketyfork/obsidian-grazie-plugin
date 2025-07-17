@@ -22,6 +22,7 @@ This project is in active development. The development infrastructure is complet
 - Grammar and spell checking engine
 - Real-time error highlighting
 - User interface components
+- Hover tooltips with error descriptions and suggestions
 
 ## What This Plugin Will Become
 

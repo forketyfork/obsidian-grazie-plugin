@@ -120,7 +120,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Implement `ViewPlugin.define()` to manage decoration state
   - Map grammar problems to editor positions using `EditorView.state.doc`
   - Create separate decoration types for grammar vs spelling errors
-- [ ] Add hover tooltips for error descriptions and confidence levels
+- [x] Add hover tooltips for error descriptions and confidence levels
   - Implement `hoverTooltip()` extension from `@codemirror/tooltip`
   - Create tooltip content with error description, confidence level, and suggestions
   - Position tooltips above grammar error decorations
