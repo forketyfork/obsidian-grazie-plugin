@@ -15,12 +15,12 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Grazie Plugin Settings" });
+		containerEl.createEl("h2", { text: "Grazie plugin settings" });
 
 		containerEl.createEl("h3", { text: "Authentication" });
 
 		new Setting(containerEl)
-			.setName("JetBrains AI Token")
+			.setName("JetBrains AI token")
 			.setDesc("Authentication token for JetBrains AI Platform")
 			.addText(text =>
 				text
@@ -34,7 +34,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Server URL")
-			.setDesc("JetBrains AI Platform server URL")
+			.setDesc("JetBrains AI platform server URL")
 			.addText(text =>
 				text
 					.setPlaceholder("https://api.jetbrains.ai")
@@ -45,7 +45,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 					})
 			);
 
-		containerEl.createEl("h3", { text: "Language Settings" });
+		containerEl.createEl("h3", { text: "Language settings" });
 
 		new Setting(containerEl)
 			.setName("Language")
@@ -60,11 +60,11 @@ export class GrazieSettingTab extends PluginSettingTab {
 				});
 			});
 
-		containerEl.createEl("h3", { text: "Service Settings" });
+		containerEl.createEl("h3", { text: "Service settings" });
 
 		new Setting(containerEl)
-			.setName("Enable MLEC Service")
-			.setDesc("Machine Learning Error Correction service")
+			.setName("Enable MLEC service")
+			.setDesc("Machine learning error correction service")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.enabledServices.mlec).onChange(async value => {
 					this.plugin.settings.enabledServices.mlec = value;
@@ -73,7 +73,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Enable Spell Service")
+			.setName("Enable spell service")
 			.setDesc("Dictionary-based spell checking service")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.enabledServices.spell).onChange(async value => {
@@ -83,7 +83,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Enable Rule Service")
+			.setName("Enable rule service")
 			.setDesc("Rule-based grammar checking service")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.enabledServices.rule).onChange(async value => {
@@ -92,10 +92,10 @@ export class GrazieSettingTab extends PluginSettingTab {
 				})
 			);
 
-		containerEl.createEl("h3", { text: "Checking Settings" });
+		containerEl.createEl("h3", { text: "Checking settings" });
 
 		new Setting(containerEl)
-			.setName("Checking Delay")
+			.setName("Checking delay")
 			.setDesc("Delay in milliseconds before checking text")
 			.addText(text =>
 				text
@@ -111,7 +111,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Minimum Confidence Level")
+			.setName("Minimum confidence level")
 			.setDesc("Minimum confidence level for showing suggestions (0.0 - 1.0)")
 			.addText(text =>
 				text
@@ -129,7 +129,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 		containerEl.createEl("h3", { text: "Exclusions" });
 
 		new Setting(containerEl)
-			.setName("Exclude Code Blocks")
+			.setName("Exclude code blocks")
 			.setDesc("Skip grammar checking in code blocks")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.excludeCodeBlocks).onChange(async value => {
@@ -139,7 +139,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Exclude Inline Code")
+			.setName("Exclude inline code")
 			.setDesc("Skip grammar checking in inline code")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.excludeInlineCode).onChange(async value => {
@@ -149,7 +149,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Exclude Links")
+			.setName("Exclude links")
 			.setDesc("Skip grammar checking in links")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.excludeLinks).onChange(async value => {
@@ -159,7 +159,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Exclude Block Quotes")
+			.setName("Exclude block quotes")
 			.setDesc("Skip grammar checking in block quotes")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.excludeBlockQuotes).onChange(async value => {
