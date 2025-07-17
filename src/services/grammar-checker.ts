@@ -7,6 +7,7 @@ import {
 } from "../jetbrains-ai";
 import { AuthenticationService } from "../jetbrains-ai/auth";
 import { GraziePluginSettings } from "../settings/types";
+import { MarkdownTextProcessor } from "./text-processor";
 
 export interface GrammarCheckResult {
 	problems: Problem[];
@@ -18,12 +19,14 @@ export interface GrammarCheckResult {
 export class GrammarCheckerService {
 	private client: JetBrainsAIClient | null = null;
 	private authService: AuthenticationService;
+	private textProcessor: MarkdownTextProcessor;
 
 	constructor(
 		private settings: GraziePluginSettings,
 		authService: AuthenticationService
 	) {
 		this.authService = authService;
+		this.textProcessor = new MarkdownTextProcessor();
 	}
 
 	async initialize(): Promise<void> {
@@ -52,8 +55,20 @@ export class GrammarCheckerService {
 		}
 
 		try {
-			// Simple sentence splitting - this will be improved later
-			const sentences = this.splitIntoSentences(text);
+			// Extract text for grammar checking, excluding code blocks, etc.
+			const processedText = this.textProcessor.extractTextForGrammarCheck(text);
+
+			if (!processedText.extractedText.trim()) {
+				return {
+					problems: [],
+					processedSentences: [],
+					totalProblems: 0,
+					hasErrors: false,
+				};
+			}
+
+			// Split extracted text into sentences
+			const sentences = this.splitIntoSentences(processedText.extractedText);
 
 			const enabledServices: CorrectionServiceType[] = [];
 			if (this.settings.enabledServices.mlec) enabledServices.push(CorrectionServiceType.MLEC);
@@ -71,8 +86,6 @@ export class GrammarCheckerService {
 				services: enabledServices,
 			};
 
-			// console.error("Grammar check request:", request);
-
 			const response = await this.client.checkGrammar(request);
 
 			// The API returns {corrections: [...]} format
@@ -85,33 +98,69 @@ export class GrammarCheckerService {
 	}
 
 	private splitIntoSentences(text: string): string[] {
-		// Basic sentence splitting - will be improved later with proper markdown handling
-		const cleanedText = text.trim();
+		// Clean up the text and handle markdown formatting
+		const cleanedText = this.textProcessor.cleanMarkdownFormatting(text.trim());
+
 		if (!cleanedText) {
 			return [];
 		}
 
-		// Split on sentence-ending punctuation followed by whitespace or end of string
-		const sentences = cleanedText
-			.split(/[.!?]+\s+/)
-			.map(sentence => sentence.trim())
-			.filter(sentence => sentence.length > 0);
+		// Split on sentence-ending punctuation followed by whitespace and capital letter
+		// This preserves the punctuation
+		const sentences: string[] = [];
+		let currentSentence = "";
 
-		// If we have sentences, make sure the last one ends with proper punctuation
-		if (sentences.length > 0) {
-			const lastSentence = sentences[sentences.length - 1];
-			// Check if the original text ended with punctuation
-			if (/[.!?]$/.test(cleanedText) && !/[.!?]$/.test(lastSentence)) {
-				// Add back the punctuation that was removed by the split
-				const lastPunctuation = cleanedText.match(/[.!?]+$/)?.[0] ?? ".";
-				sentences[sentences.length - 1] = lastSentence + lastPunctuation;
-			} else if (!/[.!?]$/.test(lastSentence)) {
-				// If the text doesn't end with punctuation, add a period
-				sentences[sentences.length - 1] = lastSentence + ".";
+		for (let i = 0; i < cleanedText.length; i++) {
+			const char = cleanedText[i];
+			currentSentence += char;
+
+			// Check if we're at a sentence boundary
+			if (/[.!?]/.test(char)) {
+				// Look ahead for whitespace and capital letter
+				const nextChar = cleanedText[i + 1];
+				const charAfterSpace = cleanedText[i + 2];
+
+				if (nextChar === " " && charAfterSpace && /[A-Z]/.test(charAfterSpace)) {
+					// This is a sentence boundary
+					sentences.push(currentSentence.trim());
+					currentSentence = "";
+					i++; // Skip the space
+				} else if (i === cleanedText.length - 1) {
+					// This is the end of the text
+					sentences.push(currentSentence.trim());
+					currentSentence = "";
+				}
 			}
 		}
 
-		return sentences;
+		// Add any remaining text as a sentence
+		if (currentSentence.trim()) {
+			sentences.push(currentSentence.trim());
+		}
+
+		// Process each sentence
+		const processedSentences: string[] = [];
+
+		for (let sentence of sentences) {
+			// Remove any remaining markdown formatting
+			sentence = sentence
+				.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
+				.replace(/_{1,3}([^_]+)_{1,3}/g, "$1")
+				.replace(/~~([^~]+)~~/g, "$1")
+				.trim();
+
+			// Ensure sentence ends with proper punctuation
+			if (!/[.!?]$/.test(sentence)) {
+				sentence += ".";
+			}
+
+			// Only add sentences that have actual content
+			if (sentence.length > 3 && /[a-zA-Z]/.test(sentence)) {
+				processedSentences.push(sentence);
+			}
+		}
+
+		return processedSentences;
 	}
 
 	private mapLanguageCode(language: string): string {

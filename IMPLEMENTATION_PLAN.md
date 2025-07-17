@@ -110,9 +110,9 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ### Phase 2: Editor Integration
 
 - [x] Add button to check currently opened file
-- [ ] Implement markdown text extraction with exclusions
-- [ ] Handle code blocks and inline code exclusion
-- [ ] Add sentence-based text processing
+- [x] Implement markdown text extraction with exclusions
+- [x] Handle code blocks and inline code exclusion
+- [x] Add sentence-based text processing
 - [ ] Implement language detection for multilingual documents
 - [ ] Implement decoration system for highlighting errors
 - [ ] Add hover tooltips for error descriptions and confidence levels
