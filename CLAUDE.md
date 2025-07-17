@@ -71,3 +71,8 @@ This file provides guidance to AI agents when working with code in this reposito
 - **User input**: When letting users select files or folders, provide an `AbstractInputSuggest` for type-ahead support
 - **Type safety**: Always validate and coerce types from frontmatter and user input (e.g., `String(value)` for frontmatter fields that might not be strings)
 - **Component pattern**: Extend `Component` class for plugin sub-components to ensure proper cleanup and lifecycle management
+
+## Development of the plugin
+
+- Always implement only one step from the IMPLEMENTATION_PLAN.md and update this file by checking the respective checkbox
+- Assume that the token for the API https://api.jetbrains.ai/ is located in the environment variable `JETBRAINS_AI_TOKEN`
