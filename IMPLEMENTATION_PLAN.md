@@ -125,7 +125,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Create tooltip content with error description, confidence level, and suggestions
   - Position tooltips above grammar error decorations
   - Include "Apply suggestion" buttons in tooltip UI
-- [ ] Create view plugin for real-time checking with debouncing
+- [x] Create view plugin for real-time checking with debouncing
   - Implement `ViewPlugin.define()` with `eventHandlers` for document changes
   - Add debouncing using `setTimeout` with 500ms delay
   - Trigger grammar check on `EditorView.updateListener`

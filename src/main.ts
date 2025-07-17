@@ -5,6 +5,7 @@ import { GrammarCheckerService } from "./services/grammar-checker";
 import { AuthenticationService } from "./jetbrains-ai/auth";
 import { EditorDecoratorService } from "./services/editor-decorator";
 import { grammarDecorationsExtension } from "./editor/decorations";
+import { realtimeCheckExtension } from "./editor/realtime-check";
 
 export default class GraziePlugin extends Plugin {
 	settings: GraziePluginSettings;
@@ -26,8 +27,9 @@ export default class GraziePlugin extends Plugin {
 			return;
 		}
 
-		// Register CodeMirror extension for grammar decorations
+		// Register CodeMirror extensions
 		this.registerEditorExtension(grammarDecorationsExtension());
+		this.registerEditorExtension(realtimeCheckExtension(this));
 
 		this.addSettingTab(new GrazieSettingTab(this.app, this));
 
