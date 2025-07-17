@@ -219,6 +219,10 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Cache grammar check results with TTL (time-to-live) of 5 minutes
   - Invalidate cache on document changes using content comparison
   - Store cache in memory with size limit (e.g., 50 documents)
+- [x] Send only changed text to API for incremental checks
+  - Track changed ranges in the CodeMirror plugin
+  - Expand to sentence or paragraph boundaries
+  - Update decorations without reprocessing the whole document
 - [ ] Optimize for large documents with pagination/chunking
   - Split documents into chunks of 10,000 characters or 100 sentences
   - Process chunks sequentially to avoid API rate limits

@@ -22,7 +22,7 @@ describe("realtimeCheckExtension", () => {
 				},
 			},
 			settings: { checkingDelay: 500 },
-			checkCurrentFile: jest.fn().mockResolvedValue(undefined),
+			checkRange: jest.fn().mockResolvedValue(undefined),
 		} as unknown as GraziePlugin;
 
 		const state = EditorState.create({
@@ -35,7 +35,9 @@ describe("realtimeCheckExtension", () => {
 		jest.advanceTimersByTime(500);
 
 		// eslint-disable-next-line @typescript-eslint/unbound-method
-		expect(plugin.checkCurrentFile).toHaveBeenCalledTimes(1);
+		expect(plugin.checkRange).toHaveBeenCalledTimes(1);
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		expect(plugin.checkRange).toHaveBeenCalledWith(view, 0, 1);
 	});
 
 	it("debounces rapid changes", () => {
@@ -47,7 +49,7 @@ describe("realtimeCheckExtension", () => {
 				},
 			},
 			settings: { checkingDelay: 500 },
-			checkCurrentFile: jest.fn().mockResolvedValue(undefined),
+			checkRange: jest.fn().mockResolvedValue(undefined),
 		} as unknown as GraziePlugin;
 
 		const state = EditorState.create({
@@ -61,9 +63,9 @@ describe("realtimeCheckExtension", () => {
 		view.dispatch({ changes: { from: 1, to: 1, insert: "b" } });
 		jest.advanceTimersByTime(499);
 		// eslint-disable-next-line @typescript-eslint/unbound-method
-		expect(plugin.checkCurrentFile).toHaveBeenCalledTimes(0);
+		expect(plugin.checkRange).toHaveBeenCalledTimes(0);
 		jest.advanceTimersByTime(1);
 		// eslint-disable-next-line @typescript-eslint/unbound-method
-		expect(plugin.checkCurrentFile).toHaveBeenCalledTimes(1);
+		expect(plugin.checkRange).toHaveBeenCalledTimes(1);
 	});
 });

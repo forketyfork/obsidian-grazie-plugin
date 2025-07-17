@@ -1,4 +1,5 @@
 import { Plugin, MarkdownView } from "obsidian";
+import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
 import { GrammarCheckerService } from "./services/grammar-checker";
@@ -111,6 +112,39 @@ export default class GraziePlugin extends Plugin {
 			}
 
 			// Display results (status icon only)
+		} catch (error) {
+			console.error("Grammar check failed:", error);
+		} finally {
+			this.statusIcon?.classList.remove("grazie-plugin-spin");
+		}
+	}
+
+	async checkRange(view: EditorView, from: number, to: number) {
+		const activeFile = this.app.workspace.getActiveFile();
+
+		if (!activeFile) {
+			return;
+		}
+
+		if (!activeFile.path.endsWith(".md")) {
+			return;
+		}
+
+		if (!this.grammarChecker || !this.authService || !this.editorDecorator) {
+			return;
+		}
+
+		try {
+			const text = view.state.doc.sliceString(from, to);
+			this.statusIcon?.classList.add("grazie-plugin-spin");
+
+			if (!this.grammarChecker.isInitialized()) {
+				await this.grammarChecker.initialize();
+			}
+
+			const result = await this.grammarChecker.checkText(text);
+
+			this.editorDecorator.applyPartialGrammarResults(view, activeFile, from, text, result);
 		} catch (error) {
 			console.error("Grammar check failed:", error);
 		} finally {

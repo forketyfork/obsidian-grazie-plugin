@@ -50,6 +50,34 @@ export class EditorDecoratorService {
 		}
 	}
 
+	applyPartialGrammarResults(
+		view: EditorView,
+		file: TFile,
+		offset: number,
+		fragment: string,
+		result: GrammarCheckResult
+	): void {
+		try {
+			const state = view.state.field(grammarDecorationsField, false);
+			const existing = state ? state.problems : [];
+
+			const rangeEnd = offset + fragment.length;
+			const remaining = existing.filter(p => p.to <= offset || p.from >= rangeEnd);
+
+			if (result.hasErrors) {
+				const processed = this.textProcessor.extractTextForGrammarCheck(fragment);
+				const problemsWithPositions = mapProblemsToPositions(result.problems, result.processedSentences, processed).map(
+					p => ({ ...p, from: p.from + offset, to: p.to + offset })
+				);
+				this.setDecorations(view, [...remaining, ...problemsWithPositions]);
+			} else {
+				this.setDecorations(view, remaining);
+			}
+		} catch (error) {
+			console.error("Failed to apply grammar decorations:", error);
+		}
+	}
+
 	/**
 	 * Clear all grammar decorations from an editor view
 	 */
