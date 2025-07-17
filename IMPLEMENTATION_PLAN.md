@@ -91,10 +91,10 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 - [x] Set up package.json with proper scripts
 - [x] Create manifest.json for Obsidian plugin
 - [x] Configure CSS build pipeline with CSSO
-- [ ] Create src directory structure
-- [ ] Create main plugin class extending Obsidian's Plugin
-- [ ] Implement settings interface with authentication support
-- [ ] Add basic configuration options
+- [x] Create src directory structure
+- [x] Create main plugin class extending Obsidian's Plugin
+- [x] Implement settings interface with authentication support
+- [x] Add basic configuration options
 - [ ] Implement configuration URL resolver
 - [ ] Create HTTP client for JetBrains AI Platform
 - [ ] Implement authentication token handling

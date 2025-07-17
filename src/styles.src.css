@@ -1,0 +1,43 @@
+/* Grazie Plugin Styles */
+
+.grazie-plugin-error {
+	border-bottom: 2px solid var(--text-error);
+	position: relative;
+}
+
+.grazie-plugin-error-grammar {
+	border-bottom: 2px solid var(--text-warning);
+}
+
+.grazie-plugin-error-spell {
+	border-bottom: 2px solid var(--text-error);
+}
+
+.grazie-plugin-tooltip {
+	position: absolute;
+	z-index: 1000;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	padding: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	max-width: 300px;
+	font-size: 0.9em;
+}
+
+.grazie-plugin-suggestion {
+	color: var(--text-accent);
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 2px;
+}
+
+.grazie-plugin-suggestion:hover {
+	background: var(--background-modifier-hover);
+}
+
+.grazie-plugin-confidence {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	margin-top: 4px;
+}
