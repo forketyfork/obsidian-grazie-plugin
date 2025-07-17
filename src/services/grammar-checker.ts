@@ -86,12 +86,32 @@ export class GrammarCheckerService {
 
 	private splitIntoSentences(text: string): string[] {
 		// Basic sentence splitting - will be improved later with proper markdown handling
-		// For now, let's send the entire text as one sentence to avoid issues
 		const cleanedText = text.trim();
 		if (!cleanedText) {
 			return [];
 		}
-		return [cleanedText];
+
+		// Split on sentence-ending punctuation followed by whitespace or end of string
+		const sentences = cleanedText
+			.split(/[.!?]+\s+/)
+			.map(sentence => sentence.trim())
+			.filter(sentence => sentence.length > 0);
+
+		// If we have sentences, make sure the last one ends with proper punctuation
+		if (sentences.length > 0) {
+			const lastSentence = sentences[sentences.length - 1];
+			// Check if the original text ended with punctuation
+			if (/[.!?]$/.test(cleanedText) && !/[.!?]$/.test(lastSentence)) {
+				// Add back the punctuation that was removed by the split
+				const lastPunctuation = cleanedText.match(/[.!?]+$/)?.[0] ?? ".";
+				sentences[sentences.length - 1] = lastSentence + lastPunctuation;
+			} else if (!/[.!?]$/.test(lastSentence)) {
+				// If the text doesn't end with punctuation, add a period
+				sentences[sentences.length - 1] = lastSentence + ".";
+			}
+		}
+
+		return sentences;
 	}
 
 	private mapLanguageCode(language: string): string {
