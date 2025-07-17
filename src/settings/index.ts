@@ -55,16 +55,6 @@ export class GrazieSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName("Use Staging Environment")
-			.setDesc("Use staging environment for testing")
-			.addToggle(toggle =>
-				toggle.setValue(this.plugin.settings.useStaging).onChange(async value => {
-					this.plugin.settings.useStaging = value;
-					await this.plugin.saveSettings();
-				})
-			);
-
 		containerEl.createEl("h3", { text: "Language Settings" });
 
 		new Setting(containerEl)
