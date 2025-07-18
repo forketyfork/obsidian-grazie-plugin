@@ -1,10 +1,10 @@
 export const requestUrl = jest.fn();
 
 export const Plugin = class MockPlugin {
-	app: any;
-	settings: any;
+	app: unknown;
+	settings: unknown;
 
-	constructor(app: any, manifest: any) {
+	constructor(app: unknown, _manifest: unknown) {
 		this.app = app;
 	}
 
@@ -15,11 +15,11 @@ export const Plugin = class MockPlugin {
 };
 
 export const PluginSettingTab = class MockPluginSettingTab {
-	app: any;
-	plugin: any;
-	containerEl: any;
+	app: unknown;
+	plugin: unknown;
+	containerEl: unknown;
 
-	constructor(app: any, plugin: any) {
+	constructor(app: unknown, plugin: unknown) {
 		this.app = app;
 		this.plugin = plugin;
 		this.containerEl = {
@@ -32,23 +32,23 @@ export const PluginSettingTab = class MockPluginSettingTab {
 };
 
 export const Setting = class MockSetting {
-	constructor(containerEl: any) {}
-	setName(name: string) {
+	constructor(_containerEl: unknown) {}
+	setName(_name: string) {
 		return this;
 	}
-	setDesc(desc: string) {
+	setDesc(_desc: string) {
 		return this;
 	}
-	addText(callback: any) {
+	addText(_callback: unknown) {
 		return this;
 	}
-	addDropdown(callback: any) {
+	addDropdown(_callback: unknown) {
 		return this;
 	}
-	addToggle(callback: any) {
+	addToggle(_callback: unknown) {
 		return this;
 	}
-	addButton(callback: any) {
+	addButton(_callback: unknown) {
 		return this;
 	}
 };

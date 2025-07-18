@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from "../src/settings/types";
+import { DEFAULT_SETTINGS } from "../settings/types";
 
 describe("Grazie Plugin", () => {
 	it("should have default settings", () => {
