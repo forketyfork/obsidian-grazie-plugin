@@ -66,15 +66,27 @@ export class EditorDecoratorService {
 
 			if (result.hasErrors) {
 				const processed = this.textProcessor.extractTextForGrammarCheck(fragment);
-				const problemsWithPositions = mapProblemsToPositions(result.problems, result.processedSentences, processed).map(
-					p => ({ ...p, from: p.from + offset, to: p.to + offset })
-				);
-				this.setDecorations(view, [...remaining, ...problemsWithPositions]);
+				const problemsWithPositions = mapProblemsToPositions(result.problems, result.processedSentences, processed);
+
+				// The positions from mapProblemsToPositions are already mapped to the original fragment
+				// We just need to add the offset to get the final document positions
+				const adjustedProblems = problemsWithPositions
+					.map(p => {
+						return {
+							...p,
+							from: p.from + offset,
+							to: p.to + offset,
+						};
+					})
+					.filter(p => p.from >= 0 && p.to <= view.state.doc.length && p.from < p.to);
+
+				const allProblems = [...remaining, ...adjustedProblems];
+				this.setDecorations(view, allProblems);
 			} else {
 				this.setDecorations(view, remaining);
 			}
 		} catch (error) {
-			console.error("Failed to apply grammar decorations:", error);
+			console.error("Failed to apply partial grammar decorations:", error);
 		}
 	}
 

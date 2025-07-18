@@ -1,4 +1,4 @@
-import { mapProblemsToPositions } from "../editor/decorations";
+import { mapProblemsToPositions, GrammarProblemWithPosition, createDecorations } from "../editor/decorations";
 import { Problem, ProblemCategory, CorrectionServiceType, ConfidenceLevel } from "../jetbrains-ai";
 import { MarkdownTextProcessor } from "../services/text-processor";
 
@@ -418,5 +418,94 @@ describe("mapProblemsToPositions", () => {
 		// Verify the highlighted text is correct
 		const highlightedText = originalText.substring(problem.from, problem.to);
 		expect(highlightedText).toBe("dirh");
+	});
+});
+
+describe("createDecorations", () => {
+	const mockProblem: Problem = {
+		message: "Test error",
+		info: {
+			id: { id: "test-error" },
+			category: ProblemCategory.SPELLING,
+			service: CorrectionServiceType.SPELL,
+			displayName: "Test Error",
+			confidence: ConfidenceLevel.HIGH,
+		},
+		highlighting: {
+			always: [{ start: 0, endExclusive: 5 }],
+			onHover: [],
+		},
+		fixes: [],
+	};
+
+	it("should filter out invalid ranges", () => {
+		const problems: GrammarProblemWithPosition[] = [
+			{
+				problem: mockProblem,
+				from: 0,
+				to: 0, // Empty range
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+			{
+				problem: mockProblem,
+				from: -1,
+				to: 5, // Negative start
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+			{
+				problem: mockProblem,
+				from: 5,
+				to: 3, // Invalid range (to < from)
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+			{
+				problem: mockProblem,
+				from: 0,
+				to: 5, // Valid range
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+		];
+
+		const decorations = createDecorations(problems);
+		expect(decorations.size).toBe(1); // Only the valid range should create a decoration
+	});
+
+	it("should handle empty problems array", () => {
+		const problems: GrammarProblemWithPosition[] = [];
+		const decorations = createDecorations(problems);
+		expect(decorations.size).toBe(0);
+	});
+
+	it("should filter out all invalid ranges", () => {
+		const problems: GrammarProblemWithPosition[] = [
+			{
+				problem: mockProblem,
+				from: 0,
+				to: 0, // Empty range
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+			{
+				problem: mockProblem,
+				from: -1,
+				to: 5, // Negative start
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+			{
+				problem: mockProblem,
+				from: 5,
+				to: 3, // Invalid range (to < from)
+				sentenceIndex: 0,
+				sentenceOffset: 0,
+			},
+		];
+
+		const decorations = createDecorations(problems);
+		expect(decorations.size).toBe(0); // No valid ranges should create decorations
 	});
 });

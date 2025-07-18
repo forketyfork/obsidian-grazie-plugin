@@ -21,7 +21,7 @@ describe("realtimeCheckExtension", () => {
 					getActiveViewOfType: jest.fn().mockReturnValue({ editor: { cm: view } }),
 				},
 			},
-			settings: { checkingDelay: 500 },
+			settings: { checkingDelay: 500, enabled: true },
 			checkRange: jest.fn().mockResolvedValue(undefined),
 		} as unknown as GraziePlugin;
 
@@ -37,7 +37,7 @@ describe("realtimeCheckExtension", () => {
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		expect(plugin.checkRange).toHaveBeenCalledTimes(1);
 		// eslint-disable-next-line @typescript-eslint/unbound-method
-		expect(plugin.checkRange).toHaveBeenCalledWith(view, 0, 1);
+		expect(plugin.checkRange).toHaveBeenCalledWith(view, 0, 5);
 	});
 
 	it("debounces rapid changes", () => {
@@ -48,7 +48,7 @@ describe("realtimeCheckExtension", () => {
 					getActiveViewOfType: jest.fn().mockReturnValue({ editor: { cm: view } }),
 				},
 			},
-			settings: { checkingDelay: 500 },
+			settings: { checkingDelay: 500, enabled: true },
 			checkRange: jest.fn().mockResolvedValue(undefined),
 		} as unknown as GraziePlugin;
 
@@ -67,5 +67,30 @@ describe("realtimeCheckExtension", () => {
 		jest.advanceTimersByTime(1);
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		expect(plugin.checkRange).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not schedule grammar check when plugin is disabled", () => {
+		const view = setupView();
+		const plugin = {
+			app: {
+				workspace: {
+					getActiveViewOfType: jest.fn().mockReturnValue({ editor: { cm: view } }),
+				},
+			},
+			settings: { checkingDelay: 500, enabled: false },
+			checkRange: jest.fn().mockResolvedValue(undefined),
+		} as unknown as GraziePlugin;
+
+		const state = EditorState.create({
+			doc: "text",
+			extensions: [realtimeCheckExtension(plugin)],
+		});
+		view.setState(state);
+
+		view.dispatch({ changes: { from: 0, to: 0, insert: "a" } });
+		jest.advanceTimersByTime(500);
+
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		expect(plugin.checkRange).toHaveBeenCalledTimes(0);
 	});
 });

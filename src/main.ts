@@ -73,22 +73,39 @@ export default class GraziePlugin extends Plugin {
 	}
 
 	async checkCurrentFile() {
+		console.log("=== checkCurrentFile called ===");
 		const activeFile = this.app.workspace.getActiveFile();
 
 		if (!activeFile) {
+			console.log("No active file");
 			return;
 		}
 
+		console.log(`Active file: ${activeFile.path}`);
 		if (!activeFile.path.endsWith(".md")) {
+			console.log("File is not a markdown file");
 			return;
 		}
 
 		if (!this.grammarChecker || !this.authService || !this.editorDecorator) {
+			console.log("Services not initialized");
+			return;
+		}
+
+		// Don't check if plugin is disabled
+		if (!this.settings.enabled) {
+			console.log("Plugin is disabled");
 			return;
 		}
 
 		try {
 			const content = await this.app.vault.cachedRead(activeFile);
+
+			// Skip empty files
+			if (content.trim().length === 0) {
+				return;
+			}
+
 			this.statusIcon?.classList.add("grazie-plugin-spin");
 
 			// Initialize grammar checker if needed
@@ -120,22 +137,40 @@ export default class GraziePlugin extends Plugin {
 	}
 
 	async checkRange(view: EditorView, from: number, to: number) {
+		console.log(`=== checkRange called ===`);
+		console.log(`Range: ${from} to ${to}`);
 		const activeFile = this.app.workspace.getActiveFile();
 
 		if (!activeFile) {
+			console.log("No active file");
 			return;
 		}
 
+		console.log(`Active file: ${activeFile.path}`);
 		if (!activeFile.path.endsWith(".md")) {
+			console.log("File is not a markdown file");
 			return;
 		}
 
 		if (!this.grammarChecker || !this.authService || !this.editorDecorator) {
+			console.log("Services not initialized");
+			return;
+		}
+
+		// Don't check if plugin is disabled
+		if (!this.settings.enabled) {
+			console.log("Plugin is disabled");
 			return;
 		}
 
 		try {
 			const text = view.state.doc.sliceString(from, to);
+
+			// Skip empty or very short text
+			if (text.trim().length < 3) {
+				return;
+			}
+
 			this.statusIcon?.classList.add("grazie-plugin-spin");
 
 			if (!this.grammarChecker.isInitialized()) {

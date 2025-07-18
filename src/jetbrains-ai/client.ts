@@ -190,6 +190,22 @@ export class JetBrainsAIClient {
 	}
 
 	private async makeRequest(url: string, body: unknown): Promise<unknown> {
+		const requestBody = JSON.stringify(body);
+		const requestTimestamp = new Date().toISOString();
+
+		// Log request details
+		console.log("=== JetBrains AI API Request ===");
+		console.log(`Timestamp: ${requestTimestamp}`);
+		console.log(`URL: ${url}`);
+		console.log(`Method: POST`);
+		console.log("Headers:", {
+			"Content-Type": "application/json",
+			"User-Agent": JetBrainsAIClient.USER_AGENT,
+			"Grazie-Authenticate-JWT": this.authConfig.token ? `${this.authConfig.token.substring(0, 20)}...` : "None",
+		});
+		console.log("Request Body:", requestBody);
+		console.log("Request Body (parsed):", body);
+
 		try {
 			const response = await requestUrl({
 				url,
@@ -199,34 +215,55 @@ export class JetBrainsAIClient {
 					"User-Agent": JetBrainsAIClient.USER_AGENT,
 					"Grazie-Authenticate-JWT": this.authConfig.token,
 				},
-				body: JSON.stringify(body),
+				body: requestBody,
 				throw: false,
 			});
 
+			const responseTimestamp = new Date().toISOString();
+
+			// Log response details
+			console.log("=== JetBrains AI API Response ===");
+			console.log(`Timestamp: ${responseTimestamp}`);
+			console.log(`Status: ${response.status}`);
+			console.log("Response Headers:", response.headers);
+			console.log("Response Body (raw):", response.text);
+			console.log("Response Body (parsed):", response.json);
+
 			if (response.status === 401) {
+				console.error("Authentication failed - Status 401");
 				throw new Error("Authentication failed. Please check your token.");
 			}
 
 			if (response.status === 403) {
+				console.error("Access forbidden - Status 403");
 				throw new Error("Access forbidden. Please check your permissions.");
 			}
 
 			if (response.status === 429) {
+				console.error("Rate limit exceeded - Status 429");
 				throw new Error("Rate limit exceeded. Please try again later.");
 			}
 
 			if (response.status < 200 || response.status >= 300) {
+				console.error(`HTTP error - Status ${response.status}`);
 				throw new Error(`HTTP ${response.status}: Request failed`);
 			}
 
 			// Validate content type
 			const contentType = response.headers["content-type"] || "";
 			if (!contentType.includes("application/json")) {
+				console.error(`Invalid content type: ${contentType}`);
 				throw new Error(`Expected JSON response, got ${contentType}`);
 			}
 
+			console.log("=== Request/Response Complete ===");
 			return response.json as unknown;
 		} catch (error) {
+			console.error("=== JetBrains AI API Error ===");
+			console.error("Error details:", error);
+			console.error("Request URL:", url);
+			console.error("Request Body:", requestBody);
+
 			if (error instanceof Error) {
 				throw new Error(`API request failed: ${error.message}`);
 			}

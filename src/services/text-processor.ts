@@ -322,6 +322,24 @@ export class MarkdownTextProcessor {
 	 * Map positions in processed text back to original text positions
 	 */
 	mapProcessedPositionToOriginal(processedPosition: number, processedText: ProcessedText): number {
+		// Simple case: if there's only one segment and it's not excluded, we can map directly
+		// but we need to account for whitespace normalization differences
+		if (processedText.segments.length === 1 && !processedText.segments[0].isExcluded) {
+			const segment = processedText.segments[0];
+			const originalText = segment.text;
+			const extractedText = processedText.extractedText;
+
+			// If the extracted text is shorter than the original, it means whitespace was normalized
+			// We need to map the position accounting for the normalization
+			if (originalText.length !== extractedText.length) {
+				return this.mapThroughWhitespaceNormalization(processedPosition, originalText, extractedText);
+			}
+
+			// If lengths are equal, direct mapping works
+			return Math.min(processedPosition, originalText.length - 1);
+		}
+
+		// Complex case: multiple segments, use the original logic
 		let currentProcessedPosition = 0;
 
 		for (const segment of processedText.segments) {
@@ -340,5 +358,27 @@ export class MarkdownTextProcessor {
 		// If we get here, the position is beyond the processed text
 		const lastSegment = processedText.segments[processedText.segments.length - 1];
 		return lastSegment ? lastSegment.originalPosition + lastSegment.originalLength : 0;
+	}
+
+	/**
+	 * Map position through whitespace normalization (trim + replace /\s+/g with " ")
+	 */
+	private mapThroughWhitespaceNormalization(
+		processedPos: number,
+		originalText: string,
+		_normalizedText: string
+	): number {
+		// Count leading whitespace characters that were trimmed
+		let leadingWhitespaceCount = 0;
+		while (leadingWhitespaceCount < originalText.length && /\s/.test(originalText[leadingWhitespaceCount])) {
+			leadingWhitespaceCount++;
+		}
+
+		// For the simple case of just leading whitespace removal (like newlines),
+		// we can just add the leading whitespace count to the processed position
+		const mappedPosition = processedPos + leadingWhitespaceCount;
+
+		// Make sure we don't exceed the original text length
+		return Math.min(mappedPosition, originalText.length);
 	}
 }

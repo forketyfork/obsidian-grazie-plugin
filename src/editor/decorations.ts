@@ -42,11 +42,22 @@ export const grammarDecorationsField = StateField.define<GrammarDecorationsState
 
 		// If document changed, adjust problem positions
 		if (transaction.docChanged && newProblems.length > 0) {
-			newProblems = newProblems.map(problemWithPos => ({
-				...problemWithPos,
-				from: transaction.changes.mapPos(problemWithPos.from),
-				to: transaction.changes.mapPos(problemWithPos.to),
-			}));
+			const docLength = transaction.newDoc.length;
+			newProblems = newProblems
+				.map(problemWithPos => {
+					const mappedFrom = transaction.changes.mapPos(problemWithPos.from);
+					const mappedTo = transaction.changes.mapPos(problemWithPos.to);
+					return {
+						...problemWithPos,
+						from: mappedFrom,
+						to: mappedTo,
+					};
+				})
+				.filter(problemWithPos => {
+					// Filter out problems that are now invalid after position mapping
+					const { from, to } = problemWithPos;
+					return from >= 0 && to > from && to <= docLength;
+				});
 			needsUpdate = true;
 		}
 
@@ -67,23 +78,29 @@ export const grammarDecorationsField = StateField.define<GrammarDecorationsState
 });
 
 // Create decorations from grammar problems
-function createDecorations(problems: GrammarProblemWithPosition[]): DecorationSet {
-	const decorations = problems.map(problemWithPos => {
-		const { problem, from, to } = problemWithPos;
-		const cssClass = getProblemCssClass(problem);
-		const title = getProblemTitle(problem);
+export function createDecorations(problems: GrammarProblemWithPosition[]): DecorationSet {
+	const decorations = problems
+		.filter(problemWithPos => {
+			const { from, to } = problemWithPos;
+			// Filter out invalid ranges: negative positions, empty ranges, or out-of-bounds positions
+			return from >= 0 && to > from && from < to;
+		})
+		.map(problemWithPos => {
+			const { problem, from, to } = problemWithPos;
+			const cssClass = getProblemCssClass(problem);
+			const title = getProblemTitle(problem);
 
-		return Decoration.mark({
-			class: cssClass,
-			attributes: {
-				title: title,
-				"data-grazie-plugin-problem": "true",
-				"data-grazie-plugin-category": problem.info.category,
-				"data-grazie-plugin-service": problem.info.service,
-				"data-grazie-plugin-confidence": problem.info.confidence,
-			},
-		}).range(from, to);
-	});
+			return Decoration.mark({
+				class: cssClass,
+				attributes: {
+					title: title,
+					"data-grazie-plugin-problem": "true",
+					"data-grazie-plugin-category": problem.info.category,
+					"data-grazie-plugin-service": problem.info.service,
+					"data-grazie-plugin-confidence": problem.info.confidence,
+				},
+			}).range(from, to);
+		});
 
 	return Decoration.set(decorations);
 }
@@ -159,8 +176,16 @@ function applySuggestion(
 	problem: GrammarProblemWithPosition,
 	suggestion: string
 ): void {
-	view.dispatch({ changes: { from: problem.from, to: problem.to, insert: suggestion } });
-	view.dispatch({ effects: setGrammarProblems.of([]) });
+	try {
+		// Apply the suggestion
+		view.dispatch({ changes: { from: problem.from, to: problem.to, insert: suggestion } });
+
+		// Remove only the specific problem that was fixed
+		const updatedProblems = state.problems.filter(p => p !== problem);
+		view.dispatch({ effects: setGrammarProblems.of(updatedProblems) });
+	} catch (error) {
+		console.error("Failed to apply suggestion:", error);
+	}
 }
 
 const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
@@ -173,6 +198,7 @@ const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
 	dom.classList.add("grazie-plugin-tooltip");
 
 	const message = document.createElement("div");
+	message.classList.add("grazie-plugin-tooltip-message");
 	message.textContent = problem.problem.message;
 	dom.appendChild(message);
 
@@ -184,11 +210,16 @@ const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
 	const suggestions = getProblemSuggestions(problem.problem);
 	if (suggestions.length > 0) {
 		const list = document.createElement("div");
+		list.classList.add("grazie-plugin-suggestions");
 		suggestions.forEach(text => {
-			const btn = document.createElement("span");
+			const btn = document.createElement("button");
 			btn.classList.add("grazie-plugin-suggestion");
 			btn.textContent = text;
-			btn.onclick = () => applySuggestion(view, state, problem, text);
+			btn.onclick = e => {
+				e.preventDefault();
+				e.stopPropagation();
+				applySuggestion(view, state, problem, text);
+			};
 			list.appendChild(btn);
 		});
 		dom.appendChild(list);
@@ -230,13 +261,31 @@ export function mapProblemsToPositions(
 	const textProcessor = new MarkdownTextProcessor();
 
 	// The API returns problems with positions relative to the concatenated text (sentences.join(" "))
+	const concatenatedText = sentences.join(" ");
+	console.log("=== Position Mapping Debug ===");
+	console.log("Concatenated text:", concatenatedText);
+	console.log("Sentences:", sentences);
+	console.log("Processed text result:", processedTextResult);
 
 	// Now we need to map positions in the concatenated text back to positions in the extracted text
 	// The API returns problems with positions relative to the concatenated text
 	for (const problem of problems) {
+		console.log("Processing problem:", problem.message);
 		for (const range of problem.highlighting.always) {
 			const concatenatedStart = range.start;
 			const concatenatedEnd = range.endExclusive;
+			console.log(`API range: ${concatenatedStart} to ${concatenatedEnd} (endExclusive)`);
+			console.log(`Text at range: "${concatenatedText.substring(concatenatedStart, concatenatedEnd)}"`);
+
+			// Debug the text content
+			const highlightedText = concatenatedText.substring(concatenatedStart, concatenatedEnd);
+			console.log(`Highlighted text: "${highlightedText}"`);
+			console.log(`Highlighted text length: ${highlightedText.length}`);
+			console.log(`Expected range length: ${concatenatedEnd - concatenatedStart}`);
+			console.log(
+				`Text character analysis:`,
+				[...highlightedText].map((c, i) => `${i}: "${c}"`)
+			);
 
 			// Find which sentence this problem belongs to
 			let sentenceIndex = -1;
@@ -295,7 +344,18 @@ export function mapProblemsToPositions(
 			const originalStart = textProcessor.mapProcessedPositionToOriginal(extractedStart, processedTextResult);
 			const originalEnd = textProcessor.mapProcessedPositionToOriginal(extractedEnd, processedTextResult);
 
-			if (originalStart !== -1 && originalEnd !== -1 && originalStart < originalEnd) {
+			console.log(
+				`Position mapping: concatenated(${concatenatedStart}-${concatenatedEnd}) -> cleaned(${cleanedStart}-${cleanedEnd}) -> extracted(${extractedStart}-${extractedEnd}) -> original(${originalStart}-${originalEnd})`
+			);
+
+			if (
+				originalStart !== -1 &&
+				originalEnd !== -1 &&
+				originalStart < originalEnd &&
+				originalStart >= 0 &&
+				originalEnd >= 0
+			) {
+				console.log(`Final mapped range: ${originalStart}-${originalEnd}`);
 				result.push({
 					problem,
 					from: originalStart,
@@ -303,6 +363,8 @@ export function mapProblemsToPositions(
 					sentenceIndex,
 					sentenceOffset,
 				});
+			} else {
+				console.log(`Invalid mapping result: ${originalStart}-${originalEnd}`);
 			}
 		}
 	}
@@ -314,6 +376,9 @@ export function mapProblemsToPositions(
 function mapCleanedPositionToOriginal(cleanedPos: number, originalText: string, _cleanedText: string): number {
 	// For this specific issue, we need to handle the fact that cleanMarkdownFormatting
 	// removes list markers that appear both at the beginning and after spaces
+
+	// Clamp the cleaned position to be within bounds
+	const clampedCleanedPos = Math.max(0, Math.min(cleanedPos, originalText.length));
 
 	// Count the number of removed characters before the target position
 	let removedChars = 0;
@@ -329,11 +394,12 @@ function mapCleanedPositionToOriginal(cleanedPos: number, originalText: string, 
 	let match;
 	while ((match = spaceMarkerRegex.exec(originalText)) !== null) {
 		// Check if this marker appears before our target position
-		if (match.index <= cleanedPos + removedChars) {
+		if (match.index <= clampedCleanedPos + removedChars) {
 			// We found a list marker that was removed, account for it
 			removedChars += match[0].length - 1; // -1 because we keep the first space
 		}
 	}
 
-	return cleanedPos + removedChars;
+	// Ensure the result is within bounds
+	return Math.max(0, Math.min(clampedCleanedPos + removedChars, originalText.length));
 }
