@@ -629,6 +629,224 @@ describe("mapProblemsToPositions", () => {
 			expect(problem.to).toBe(expectedEnd);
 		});
 	});
+
+	it("should handle backtick formatting - reproduces highlighting offset bug", () => {
+		// Test the exact scenario from the user's bug report
+		const originalText = "`hello` Hello, hello, what's going on withh the plain?";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		// The extracted text should have backticks removed: "hello Hello, hello, what's going on withh the plain?"
+		const sentences = [processedTextResult.extractedText];
+
+		// The problem should be on "withh" which is at a different position in the processed text
+		const sentenceText = sentences[0];
+		const withhStartInSentence = sentenceText.indexOf("withh");
+		const withhEndInSentence = withhStartInSentence + 5;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: withhStartInSentence,
+							endExclusive: withhEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		// "withh" should be at position 38 in the original text "`hello` Hello, hello, what's going on withh the plain?"
+		const expectedStart = originalText.indexOf("withh");
+		const expectedEnd = expectedStart + 5;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("withh");
+	});
+
+	it("should handle multiple inline code blocks", () => {
+		// Test case with multiple inline code blocks
+		const originalText = "`code1` Some text `code2` and more text with misstake here.";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		const sentences = [processedTextResult.extractedText];
+
+		// Find the problem word in the processed text
+		const sentenceText = sentences[0];
+		const misstakeStartInSentence = sentenceText.indexOf("misstake");
+		const misstakeEndInSentence = misstakeStartInSentence + 8;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: misstakeStartInSentence,
+							endExclusive: misstakeEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		const expectedStart = originalText.indexOf("misstake");
+		const expectedEnd = expectedStart + 8;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("misstake");
+	});
+
+	it("should handle inline code at the beginning of text", () => {
+		// Test case with inline code at the very beginning
+		const originalText = "`start` This has an errror in it.";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		const sentences = [processedTextResult.extractedText];
+
+		// Find the problem word in the processed text
+		const sentenceText = sentences[0];
+		const errrorStartInSentence = sentenceText.indexOf("errror");
+		const errrorEndInSentence = errrorStartInSentence + 6;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: errrorStartInSentence,
+							endExclusive: errrorEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		const expectedStart = originalText.indexOf("errror");
+		const expectedEnd = expectedStart + 6;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("errror");
+	});
+
+	it("should handle inline code at the end of text", () => {
+		// Test case with inline code at the very end
+		const originalText = "This has an errror in it `end`.";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		const sentences = [processedTextResult.extractedText];
+
+		// Find the problem word in the processed text
+		const sentenceText = sentences[0];
+		const errrorStartInSentence = sentenceText.indexOf("errror");
+		const errrorEndInSentence = errrorStartInSentence + 6;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: errrorStartInSentence,
+							endExclusive: errrorEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		const expectedStart = originalText.indexOf("errror");
+		const expectedEnd = expectedStart + 6;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("errror");
+	});
 });
 
 describe("createDecorations", () => {

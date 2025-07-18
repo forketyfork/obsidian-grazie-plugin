@@ -382,47 +382,29 @@ export function mapProblemsToPositions(
 
 	const extractedText = processedTextResult.extractedText;
 
-	console.log(`🔍 DEBUG: Extracted text: "${extractedText}"`);
-	console.log(
-		`🔍 DEBUG: Sentences:`,
-		sentences.map((s, i) => `${i}: "${s}"`)
-	);
-
 	// Process each problem
 	for (const problemWithSentence of problems) {
 		const sentenceIndex = problemWithSentence.sentenceIndex;
 		const targetSentence = sentences[sentenceIndex];
 
-		console.log(`🔍 DEBUG: Processing problem in sentence ${sentenceIndex}: "${targetSentence}"`);
-
 		// Find the sentence in the extracted text
 		const sentenceStartInExtracted = extractedText.indexOf(targetSentence);
 
 		if (sentenceStartInExtracted === -1) {
-			console.log(`🔍 DEBUG: Could not find sentence "${targetSentence}" in extracted text`);
 			continue;
 		}
-
-		console.log(`🔍 DEBUG: Sentence found at position ${sentenceStartInExtracted} in extracted text`);
 
 		for (const range of problemWithSentence.highlighting.always) {
 			const sentenceStart = range.start;
 			const sentenceEnd = range.endExclusive;
 
-			console.log(`🔍 DEBUG: Problem range in sentence: ${sentenceStart}-${sentenceEnd}`);
-			console.log(`🔍 DEBUG: Problem text: "${targetSentence.substring(sentenceStart, sentenceEnd)}"`);
-
 			// Calculate the position in extracted text
 			const extractedStart = sentenceStartInExtracted + sentenceStart;
 			const extractedEnd = sentenceStartInExtracted + sentenceEnd;
 
-			console.log(`🔍 DEBUG: Extracted range: ${extractedStart}-${extractedEnd}`);
-
 			// Map back to original text positions using the proper mapping
 			const originalStart = textProcessor.mapProcessedPositionToOriginal(extractedStart, processedTextResult);
 			const originalEnd = textProcessor.mapProcessedPositionToOriginal(extractedEnd, processedTextResult);
-
-			console.log(`🔍 DEBUG: Original range: ${originalStart}-${originalEnd}`);
 
 			if (
 				originalStart !== -1 &&

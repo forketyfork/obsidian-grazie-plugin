@@ -339,20 +339,48 @@ export class MarkdownTextProcessor {
 			return Math.min(processedPosition, originalText.length - 1);
 		}
 
-		// Complex case: multiple segments, use the original logic
-		let currentProcessedPosition = 0;
+		// Complex case: multiple segments, we need to account for whitespace normalization
+		// Build the extracted text manually to track position mappings accurately
+		const extractedParts: string[] = [];
+		let rawExtractedText = "";
+
+		for (const segment of processedText.segments) {
+			if (!segment.isExcluded) {
+				rawExtractedText += segment.text;
+				extractedParts.push(segment.text);
+			}
+		}
+
+		// The actual extracted text has normalization applied: join with " ", apply regex replacement, and trim
+		const normalizedExtractedText = rawExtractedText.replace(/\s+/g, " ").trim();
+
+		// If the processed position is beyond the normalized text, return the end position
+		if (processedPosition >= normalizedExtractedText.length) {
+			const lastSegment = processedText.segments[processedText.segments.length - 1];
+			return lastSegment ? lastSegment.originalPosition + lastSegment.originalLength : 0;
+		}
+
+		// Map the position through whitespace normalization first
+		const rawPosition = this.mapThroughWhitespaceNormalization(
+			processedPosition,
+			rawExtractedText,
+			normalizedExtractedText
+		);
+
+		// Now map the raw position back to original segments
+		let currentRawPosition = 0;
 
 		for (const segment of processedText.segments) {
 			if (segment.isExcluded) continue;
 
 			const segmentLength = segment.text.length;
-			if (currentProcessedPosition + segmentLength >= processedPosition) {
+			if (currentRawPosition + segmentLength > rawPosition) {
 				// The position is within this segment
-				const offsetInSegment = processedPosition - currentProcessedPosition;
+				const offsetInSegment = rawPosition - currentRawPosition;
 				return segment.originalPosition + offsetInSegment;
 			}
 
-			currentProcessedPosition += segmentLength;
+			currentRawPosition += segmentLength;
 		}
 
 		// If we get here, the position is beyond the processed text
