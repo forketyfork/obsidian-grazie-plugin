@@ -203,7 +203,7 @@ export class GrammarCheckerService {
 				const nextChar = cleanedText[i + 1];
 				const charAfterSpace = cleanedText[i + 2];
 
-				if ((nextChar === " " || nextChar === "\n") && charAfterSpace && /[A-Z]/.test(charAfterSpace)) {
+				if ((nextChar === " " || nextChar === "\n") && charAfterSpace && /\p{Lu}/u.test(charAfterSpace)) {
 					// This is a sentence boundary
 					sentences.push(currentSentence.trim());
 					currentSentence = "";
@@ -238,7 +238,7 @@ export class GrammarCheckerService {
 			}
 
 			// Only add sentences that have actual content
-			if (sentence.length > 3 && /[a-zA-Z]/.test(sentence)) {
+			if (sentence.length > 3 && /\p{L}/u.test(sentence)) {
 				processedSentences.push(sentence);
 			}
 		}
