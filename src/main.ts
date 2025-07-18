@@ -47,6 +47,16 @@ export default class GraziePlugin extends Plugin {
 		this.addRibbonIcon("spell-check", "Check grammar", (_evt: MouseEvent) => {
 			void this.checkCurrentFile();
 		});
+
+		// Automatically check file when opened
+		this.registerEvent(
+			this.app.workspace.on("file-open", () => {
+				// Delay check until view is ready
+				window.setTimeout(() => {
+					void this.checkCurrentFile();
+				}, 50);
+			})
+		);
 	}
 
 	onunload() {

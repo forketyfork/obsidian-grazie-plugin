@@ -207,31 +207,83 @@ const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
 	confidence.textContent = "Confidence: " + (problem.problem.info.confidence === ConfidenceLevel.HIGH ? "High" : "Low");
 	dom.appendChild(confidence);
 
-	const suggestions = getProblemSuggestions(problem.problem);
-	if (suggestions.length > 0) {
-		const list = document.createElement("div");
-		list.classList.add("grazie-plugin-suggestions");
-		suggestions.forEach(text => {
-			const btn = document.createElement("button");
-			btn.classList.add("grazie-plugin-suggestion");
-			btn.textContent = text;
-			btn.onclick = e => {
-				e.preventDefault();
-				e.stopPropagation();
-				applySuggestion(view, state, problem, text);
-			};
-			list.appendChild(btn);
-		});
-		dom.appendChild(list);
-	}
-
 	return { pos: problem.from, above: true, create: () => ({ dom }) };
 });
 
 // View plugin for handling grammar decorations
 export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 	class {
-		constructor(readonly view: EditorView) {}
+		private dropdown: HTMLSelectElement | null = null;
+
+		constructor(readonly view: EditorView) {
+			this.view.dom.addEventListener("mousedown", this.onClick);
+		}
+
+		private onClick = (event: MouseEvent): void => {
+			const target = event.target as HTMLElement;
+			if (!target.closest("[data-grazie-plugin-problem]")) {
+				this.hideDropdown();
+				return;
+			}
+
+			const pos = this.view.posAtDOM(target);
+			const state = this.view.state.field(grammarDecorationsField, false);
+			if (!state) {
+				return;
+			}
+			const problem = state.problems.find(p => pos >= p.from && pos <= p.to);
+			if (!problem) {
+				return;
+			}
+
+			event.preventDefault();
+			this.showDropdown(problem, state);
+		};
+
+		private showDropdown(problem: GrammarProblemWithPosition, state: GrammarDecorationsState): void {
+			this.hideDropdown();
+			const suggestions = getProblemSuggestions(problem.problem);
+			if (suggestions.length === 0) return;
+
+			const select = document.createElement("select");
+			select.classList.add("grazie-plugin-suggestions-dropdown");
+			select.appendChild(new Option("Select replacement…", "", true, true));
+			for (const text of suggestions) {
+				select.appendChild(new Option(text, text));
+			}
+
+			const coords = this.view.coordsAtPos(problem.to);
+			if (!coords) {
+				return;
+			}
+			select.style.position = "absolute";
+			select.style.left = `${coords.left}px`;
+			select.style.top = `${coords.bottom + 2}px`;
+
+			document.body.appendChild(select);
+			this.dropdown = select;
+			select.focus();
+
+			const remove = () => {
+				this.hideDropdown();
+				window.removeEventListener("mousedown", remove);
+			};
+			window.addEventListener("mousedown", remove);
+
+			select.addEventListener("change", () => {
+				if (select.value) {
+					applySuggestion(this.view, state, problem, select.value);
+				}
+				this.hideDropdown();
+			});
+		}
+
+		private hideDropdown(): void {
+			if (this.dropdown) {
+				this.dropdown.remove();
+				this.dropdown = null;
+			}
+		}
 
 		update(_update: ViewUpdate) {
 			// Currently just responding to decoration updates
@@ -239,7 +291,8 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 		}
 
 		destroy() {
-			// Cleanup if needed
+			this.hideDropdown();
+			this.view.dom.removeEventListener("mousedown", this.onClick);
 		}
 	}
 );

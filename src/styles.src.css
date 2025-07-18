@@ -57,6 +57,11 @@
 	margin-top: 4px;
 }
 
+.grazie-plugin-suggestions-dropdown {
+	font-size: 0.9em;
+	z-index: 1000;
+}
+
 /* Status bar logo */
 .grazie-plugin-status-icon {
 	display: inline-block;

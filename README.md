@@ -24,7 +24,9 @@ This project is in active development. The development infrastructure is complet
 - Incremental checks send only changed text to the API for better performance
 - Status bar spinner indicates active grammar checking
 - User interface components
-- Hover tooltips with error descriptions and suggestions
+- Hover tooltips with error descriptions
+- Grammar check runs automatically when opening a markdown file
+- Click highlighted text to select a suggestion from a dropdown
 
 ## What This Plugin Will Become
 
@@ -34,6 +36,7 @@ The Obsidian Grazie Plugin will bring advanced grammar and spell checking to Obs
 - **Multi-language Support**: English, German, Russian, and Ukrainian
 - **Real-time Error Detection**: Highlights grammar and spelling errors as you type
 - **Smart Corrections**: Provides contextually appropriate suggestions
+- **Clickable Suggestions**: Selecting highlighted text shows a dropdown with replacement options
 - **Markdown Awareness**: Understands Markdown syntax and ignores code blocks
 - **Configurable Services**: Choose between MLEC (ML-based), SPELL (dictionary), and RULE (rule-based) checking
 
