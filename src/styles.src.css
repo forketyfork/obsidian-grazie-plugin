@@ -99,6 +99,31 @@
 	background: var(--background-modifier-active);
 }
 
+/* Message styles for problems without fixes */
+.grazie-plugin-no-suggestions-message {
+	padding: 8px 12px;
+	text-align: left;
+	line-height: 1.4;
+}
+
+.grazie-plugin-message-title {
+	font-weight: bold;
+	color: var(--text-normal);
+	margin-bottom: 4px;
+}
+
+.grazie-plugin-message-text {
+	color: var(--text-muted);
+	margin-bottom: 6px;
+	font-size: 0.9em;
+}
+
+.grazie-plugin-message-note {
+	color: var(--text-faint);
+	font-size: 0.8em;
+	font-style: italic;
+}
+
 /* Status bar logo */
 .grazie-plugin-status-icon {
 	display: inline-block;

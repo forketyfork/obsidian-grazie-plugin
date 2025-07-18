@@ -253,52 +253,69 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 		private showDropdown(problem: GrammarProblemWithPosition, state: GrammarDecorationsState): void {
 			this.hideDropdown();
 			const suggestions = getProblemSuggestions(problem.problem);
-			if (suggestions.length === 0) return;
 
 			// Create a popup container
 			const popup = document.createElement("div");
 			popup.classList.add("grazie-plugin-suggestions-popup");
 
-			// Create suggestion buttons
-			suggestions.forEach((suggestion, _index) => {
-				const button = document.createElement("button");
-				button.classList.add("grazie-plugin-suggestion-button");
-				button.textContent = formatSuggestionWithDescription(suggestion, problem.problem);
-				button.title = formatSuggestionWithDescription(suggestion, problem.problem);
+			if (suggestions.length === 0) {
+				// Show informative message for problems without fixes
+				const messageDiv = document.createElement("div");
+				messageDiv.classList.add("grazie-plugin-no-suggestions-message");
 
-				// Apply suggestion on click
-				button.addEventListener("click", e => {
-					e.preventDefault();
-					e.stopPropagation();
-					applySuggestion(this.view, state, problem, suggestion);
-					this.hideDropdown();
-					window.removeEventListener("click", remove);
-				});
+				const problemType = problem.problem.info.category === ProblemCategory.SPELLING ? "spelling" : "grammar";
+				const title = problem.problem.info.displayName || `${problemType} issue`;
+				const message = problem.problem.message || "No suggestions available";
 
-				// Add keyboard support
-				button.addEventListener("keydown", e => {
-					if (e.key === "Enter" || e.key === " ") {
+				messageDiv.innerHTML = `
+					<div class="grazie-plugin-message-title">${title}</div>
+					<div class="grazie-plugin-message-text">${message}</div>
+					<div class="grazie-plugin-message-note">No automatic fixes available for this issue.</div>
+				`;
+
+				popup.appendChild(messageDiv);
+			} else {
+				// Create suggestion buttons
+				suggestions.forEach((suggestion, _index) => {
+					const button = document.createElement("button");
+					button.classList.add("grazie-plugin-suggestion-button");
+					button.textContent = formatSuggestionWithDescription(suggestion, problem.problem);
+					button.title = formatSuggestionWithDescription(suggestion, problem.problem);
+
+					// Apply suggestion on click
+					button.addEventListener("click", e => {
 						e.preventDefault();
 						e.stopPropagation();
 						applySuggestion(this.view, state, problem, suggestion);
 						this.hideDropdown();
 						window.removeEventListener("click", remove);
-					} else if (e.key === "Escape") {
-						this.hideDropdown();
-						window.removeEventListener("click", remove);
-					} else if (e.key === "ArrowDown") {
-						e.preventDefault();
-						const nextButton = button.nextElementSibling as HTMLButtonElement;
-						if (nextButton) nextButton.focus();
-					} else if (e.key === "ArrowUp") {
-						e.preventDefault();
-						const prevButton = button.previousElementSibling as HTMLButtonElement;
-						if (prevButton) prevButton.focus();
-					}
-				});
+					});
 
-				popup.appendChild(button);
-			});
+					// Add keyboard support
+					button.addEventListener("keydown", e => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.preventDefault();
+							e.stopPropagation();
+							applySuggestion(this.view, state, problem, suggestion);
+							this.hideDropdown();
+							window.removeEventListener("click", remove);
+						} else if (e.key === "Escape") {
+							this.hideDropdown();
+							window.removeEventListener("click", remove);
+						} else if (e.key === "ArrowDown") {
+							e.preventDefault();
+							const nextButton = button.nextElementSibling as HTMLButtonElement;
+							if (nextButton) nextButton.focus();
+						} else if (e.key === "ArrowUp") {
+							e.preventDefault();
+							const prevButton = button.previousElementSibling as HTMLButtonElement;
+							if (prevButton) prevButton.focus();
+						}
+					});
+
+					popup.appendChild(button);
+				});
+			}
 
 			// Position the popup
 			const coords = this.view.coordsAtPos(problem.from);
