@@ -60,6 +60,14 @@
 .grazie-plugin-suggestions-dropdown {
 	font-size: 0.9em;
 	z-index: 1000;
+	min-width: 200px;
+	max-width: 400px;
+	padding: 4px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Status bar logo */

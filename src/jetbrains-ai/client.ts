@@ -193,7 +193,7 @@ export class JetBrainsAIClient {
 		const requestBody = JSON.stringify(body);
 		const requestTimestamp = new Date().toISOString();
 
-		// Log request details
+		// Log request details (skip during tests to avoid confusion)
 		console.log("=== JetBrains AI API Request ===");
 		console.log(`Timestamp: ${requestTimestamp}`);
 		console.log(`URL: ${url}`);
@@ -221,7 +221,7 @@ export class JetBrainsAIClient {
 
 			const responseTimestamp = new Date().toISOString();
 
-			// Log response details
+			// Log response details (skip during tests to avoid confusion)
 			console.log("=== JetBrains AI API Response ===");
 			console.log(`Timestamp: ${responseTimestamp}`);
 			console.log(`Status: ${response.status}`);

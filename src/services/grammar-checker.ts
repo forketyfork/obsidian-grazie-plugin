@@ -10,8 +10,12 @@ import { GraziePluginSettings, SupportedLanguage } from "../settings/types";
 import { MarkdownTextProcessor } from "./text-processor";
 import { LanguageDetectorService, LanguageDetectionResult } from "./language-detector";
 
+export interface ProblemWithSentence extends Problem {
+	sentenceIndex: number;
+}
+
 export interface GrammarCheckResult {
-	problems: Problem[];
+	problems: ProblemWithSentence[];
 	processedSentences: string[];
 	totalProblems: number;
 	hasErrors: boolean;
@@ -253,12 +257,20 @@ export class GrammarCheckerService {
 	}
 
 	private processGrammarResponse(response: SentenceWithProblems[]): GrammarCheckResult {
-		const allProblems: Problem[] = [];
+		const allProblems: ProblemWithSentence[] = [];
 		const processedSentences: string[] = [];
 
-		for (const sentenceResult of response) {
+		for (let sentenceIndex = 0; sentenceIndex < response.length; sentenceIndex++) {
+			const sentenceResult = response[sentenceIndex];
 			processedSentences.push(sentenceResult.sentence);
-			allProblems.push(...sentenceResult.problems);
+			
+			// Add sentence index to each problem
+			for (const problem of sentenceResult.problems) {
+				allProblems.push({
+					...problem,
+					sentenceIndex
+				});
+			}
 		}
 
 		// Filter problems based on confidence level

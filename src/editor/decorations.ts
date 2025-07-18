@@ -1,7 +1,8 @@
-import { EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate, hoverTooltip, Tooltip } from "@codemirror/view";
+import { EditorView, Decoration, DecorationSet, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import { StateField, StateEffect, Extension, Transaction } from "@codemirror/state";
 import { Problem, ProblemCategory, CorrectionServiceType, ConfidenceLevel } from "../jetbrains-ai";
 import { MarkdownTextProcessor, ProcessedText } from "../services/text-processor";
+import { ProblemWithSentence } from "../services/grammar-checker";
 
 export interface GrammarProblemWithPosition {
 	problem: Problem;
@@ -84,6 +85,12 @@ export function createDecorations(problems: GrammarProblemWithPosition[]): Decor
 			const { from, to } = problemWithPos;
 			// Filter out invalid ranges: negative positions, empty ranges, or out-of-bounds positions
 			return from >= 0 && to > from && from < to;
+		})
+		.sort((a, b) => {
+			// Sort by from position to ensure decorations are added in order
+			if (a.from !== b.from) return a.from - b.from;
+			// If from positions are equal, sort by to position
+			return a.to - b.to;
 		})
 		.map(problemWithPos => {
 			const { problem, from, to } = problemWithPos;
@@ -170,6 +177,29 @@ function getProblemSuggestions(problem: Problem): string[] {
 		.slice(0, 3);
 }
 
+function formatSuggestionWithDescription(suggestion: string, problem: Problem): string {
+	const displayName = problem.info.displayName || "";
+	const message = problem.message || "";
+
+	// Format as: "replacement" (DisplayName. Message) - using quotes instead of markdown bold
+	let formatted = `"${suggestion}"`;
+
+	if (displayName || message) {
+		formatted += " (";
+		if (displayName) {
+			formatted += displayName;
+			if (message && message !== displayName) {
+				formatted += ". " + message;
+			}
+		} else if (message) {
+			formatted += message;
+		}
+		formatted += ")";
+	}
+
+	return formatted;
+}
+
 function applySuggestion(
 	view: EditorView,
 	state: GrammarDecorationsState,
@@ -188,40 +218,19 @@ function applySuggestion(
 	}
 }
 
-const grammarTooltip = hoverTooltip((view, pos): Tooltip | null => {
-	const state = view.state.field(grammarDecorationsField, false);
-	if (!state) return null;
-	const problem = state.problems.find(p => pos >= p.from && pos <= p.to);
-	if (!problem) return null;
-
-	const dom = document.createElement("div");
-	dom.classList.add("grazie-plugin-tooltip");
-
-	const message = document.createElement("div");
-	message.classList.add("grazie-plugin-tooltip-message");
-	message.textContent = problem.problem.message;
-	dom.appendChild(message);
-
-	const confidence = document.createElement("div");
-	confidence.classList.add("grazie-plugin-confidence");
-	confidence.textContent = "Confidence: " + (problem.problem.info.confidence === ConfidenceLevel.HIGH ? "High" : "Low");
-	dom.appendChild(confidence);
-
-	return { pos: problem.from, above: true, create: () => ({ dom }) };
-});
-
 // View plugin for handling grammar decorations
 export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 	class {
 		private dropdown: HTMLSelectElement | null = null;
 
 		constructor(readonly view: EditorView) {
-			this.view.dom.addEventListener("mousedown", this.onClick);
+			this.view.dom.addEventListener("click", this.onClick);
 		}
 
 		private onClick = (event: MouseEvent): void => {
 			const target = event.target as HTMLElement;
-			if (!target.closest("[data-grazie-plugin-problem]")) {
+			const problemElement = target.closest("[data-grazie-plugin-problem]");
+			if (!problemElement) {
 				this.hideDropdown();
 				return;
 			}
@@ -237,6 +246,7 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			}
 
 			event.preventDefault();
+			event.stopPropagation();
 			this.showDropdown(problem, state);
 		};
 
@@ -247,9 +257,20 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 
 			const select = document.createElement("select");
 			select.classList.add("grazie-plugin-suggestions-dropdown");
-			select.appendChild(new Option("Select replacement…", "", true, true));
-			for (const text of suggestions) {
-				select.appendChild(new Option(text, text));
+			select.size = 1; // Ensure single-select dropdown, not multi-select
+			select.multiple = false; // Explicitly disable multi-select
+
+			// Add options with formatted text but store the actual replacement as value
+			for (let i = 0; i < suggestions.length; i++) {
+				const suggestion = suggestions[i];
+				const formattedText = formatSuggestionWithDescription(suggestion, problem.problem);
+				const option = new Option(formattedText, suggestion);
+				select.appendChild(option);
+			}
+
+			// Set initial selection to first option
+			if (suggestions.length > 0) {
+				select.selectedIndex = 0;
 			}
 
 			const coords = this.view.coordsAtPos(problem.to);
@@ -264,18 +285,38 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			this.dropdown = select;
 			select.focus();
 
-			const remove = () => {
-				this.hideDropdown();
-				window.removeEventListener("mousedown", remove);
+			const remove = (e: MouseEvent) => {
+				if (e.target && !select.contains(e.target as Node)) {
+					this.hideDropdown();
+					window.removeEventListener("click", remove);
+				}
 			};
-			window.addEventListener("mousedown", remove);
 
-			select.addEventListener("change", () => {
+			// Apply suggestion immediately when selection changes
+			const applySuggestionHandler = () => {
 				if (select.value) {
 					applySuggestion(this.view, state, problem, select.value);
 				}
 				this.hideDropdown();
+				window.removeEventListener("click", remove);
+			};
+
+			select.addEventListener("change", applySuggestionHandler);
+
+			// Handle Enter key
+			select.addEventListener("keydown", e => {
+				if (e.key === "Enter") {
+					applySuggestionHandler();
+				} else if (e.key === "Escape") {
+					this.hideDropdown();
+					window.removeEventListener("click", remove);
+				}
 			});
+
+			// Set up outside click handler after a short delay to avoid immediate triggering
+			setTimeout(() => {
+				window.addEventListener("click", remove);
+			}, 100);
 		}
 
 		private hideDropdown(): void {
@@ -292,19 +333,19 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 
 		destroy() {
 			this.hideDropdown();
-			this.view.dom.removeEventListener("mousedown", this.onClick);
+			this.view.dom.removeEventListener("click", this.onClick);
 		}
 	}
 );
 
 // Main extension that combines the state field and view plugin
 export function grammarDecorationsExtension(): Extension {
-	return [grammarDecorationsField, grammarDecorationsPlugin, grammarTooltip];
+	return [grammarDecorationsField, grammarDecorationsPlugin];
 }
 
 // Helper function to map grammar problems to editor positions
 export function mapProblemsToPositions(
-	problems: Problem[],
+	problems: ProblemWithSentence[],
 	sentences: string[],
 	processedTextResult: ProcessedText
 ): GrammarProblemWithPosition[] {
@@ -313,93 +354,46 @@ export function mapProblemsToPositions(
 	// Create a text processor instance to use the proper mapping function
 	const textProcessor = new MarkdownTextProcessor();
 
-	// The API returns problems with positions relative to the concatenated text (sentences.join(" "))
-	const concatenatedText = sentences.join(" ");
-	console.log("=== Position Mapping Debug ===");
-	console.log("Concatenated text:", concatenatedText);
-	console.log("Sentences:", sentences);
-	console.log("Processed text result:", processedTextResult);
+	const extractedText = processedTextResult.extractedText;
 
-	// Now we need to map positions in the concatenated text back to positions in the extracted text
-	// The API returns problems with positions relative to the concatenated text
-	for (const problem of problems) {
-		console.log("Processing problem:", problem.message);
-		for (const range of problem.highlighting.always) {
-			const concatenatedStart = range.start;
-			const concatenatedEnd = range.endExclusive;
-			console.log(`API range: ${concatenatedStart} to ${concatenatedEnd} (endExclusive)`);
-			console.log(`Text at range: "${concatenatedText.substring(concatenatedStart, concatenatedEnd)}"`);
+	console.log(`🔍 DEBUG: Extracted text: "${extractedText}"`);
+	console.log(`🔍 DEBUG: Sentences:`, sentences.map((s, i) => `${i}: "${s}"`));
 
-			// Debug the text content
-			const highlightedText = concatenatedText.substring(concatenatedStart, concatenatedEnd);
-			console.log(`Highlighted text: "${highlightedText}"`);
-			console.log(`Highlighted text length: ${highlightedText.length}`);
-			console.log(`Expected range length: ${concatenatedEnd - concatenatedStart}`);
-			console.log(
-				`Text character analysis:`,
-				[...highlightedText].map((c, i) => `${i}: "${c}"`)
-			);
+	// Process each problem
+	for (const problemWithSentence of problems) {
+		const sentenceIndex = problemWithSentence.sentenceIndex;
+		const targetSentence = sentences[sentenceIndex];
 
-			// Find which sentence this problem belongs to
-			let sentenceIndex = -1;
-			let sentenceOffset = 0;
-			let currentOffset = 0;
+		console.log(`🔍 DEBUG: Processing problem in sentence ${sentenceIndex}: "${targetSentence}"`);
 
-			for (let i = 0; i < sentences.length; i++) {
-				const sentence = sentences[i];
-				if (concatenatedStart >= currentOffset && concatenatedStart < currentOffset + sentence.length) {
-					sentenceIndex = i;
-					sentenceOffset = concatenatedStart - currentOffset;
-					break;
-				}
-				currentOffset += sentence.length + 1; // +1 for space separator
-			}
+		// Find the sentence in the extracted text
+		const sentenceStartInExtracted = extractedText.indexOf(targetSentence);
+		
+		if (sentenceStartInExtracted === -1) {
+			console.log(`🔍 DEBUG: Could not find sentence "${targetSentence}" in extracted text`);
+			continue;
+		}
 
-			if (sentenceIndex === -1) {
-				continue; // Skip problematic mapping
-			}
+		console.log(`🔍 DEBUG: Sentence found at position ${sentenceStartInExtracted} in extracted text`);
 
-			// Now map the sentence-relative positions back to the original extracted text
-			// We need to account for the fact that sentences were created by cleaning the extracted text
-			const extractedText = processedTextResult.extractedText;
-			const cleanedExtractedText = textProcessor.cleanMarkdownFormatting(extractedText);
+		for (const range of problemWithSentence.highlighting.always) {
+			const sentenceStart = range.start;
+			const sentenceEnd = range.endExclusive;
 
-			// Find the sentence in the cleaned extracted text
-			let cleanedSentenceStart = -1;
-			let searchStart = 0;
+			console.log(`🔍 DEBUG: Problem range in sentence: ${sentenceStart}-${sentenceEnd}`);
+			console.log(`🔍 DEBUG: Problem text: "${targetSentence.substring(sentenceStart, sentenceEnd)}"`);
 
-			// Try to find the sentence in the cleaned extracted text
-			for (let i = 0; i <= sentenceIndex; i++) {
-				const currentSentence = sentences[i];
-				const foundIndex = cleanedExtractedText.indexOf(currentSentence, searchStart);
-				if (foundIndex !== -1) {
-					if (i === sentenceIndex) {
-						cleanedSentenceStart = foundIndex;
-						break;
-					}
-					searchStart = foundIndex + currentSentence.length;
-				}
-			}
+			// Calculate the position in extracted text
+			const extractedStart = sentenceStartInExtracted + sentenceStart;
+			const extractedEnd = sentenceStartInExtracted + sentenceEnd;
 
-			if (cleanedSentenceStart === -1) {
-				continue; // Skip if sentence not found in cleaned extracted text
-			}
-
-			// Calculate positions in the cleaned extracted text
-			const cleanedStart = cleanedSentenceStart + sentenceOffset;
-			const cleanedEnd = cleanedStart + (concatenatedEnd - concatenatedStart);
-
-			// Map from cleaned positions back to original extracted text positions
-			const extractedStart = mapCleanedPositionToOriginal(cleanedStart, extractedText, cleanedExtractedText);
-			const extractedEnd = mapCleanedPositionToOriginal(cleanedEnd, extractedText, cleanedExtractedText);
+			console.log(`🔍 DEBUG: Extracted range: ${extractedStart}-${extractedEnd}`);
 
 			// Map back to original text positions using the proper mapping
 			const originalStart = textProcessor.mapProcessedPositionToOriginal(extractedStart, processedTextResult);
 			const originalEnd = textProcessor.mapProcessedPositionToOriginal(extractedEnd, processedTextResult);
 
-			console.log(
-				`Position mapping: concatenated(${concatenatedStart}-${concatenatedEnd}) -> cleaned(${cleanedStart}-${cleanedEnd}) -> extracted(${extractedStart}-${extractedEnd}) -> original(${originalStart}-${originalEnd})`
-			);
+			console.log(`🔍 DEBUG: Original range: ${originalStart}-${originalEnd}`);
 
 			if (
 				originalStart !== -1 &&
@@ -408,51 +402,16 @@ export function mapProblemsToPositions(
 				originalStart >= 0 &&
 				originalEnd >= 0
 			) {
-				console.log(`Final mapped range: ${originalStart}-${originalEnd}`);
 				result.push({
-					problem,
+					problem: problemWithSentence,
 					from: originalStart,
 					to: originalEnd,
 					sentenceIndex,
-					sentenceOffset,
+					sentenceOffset: sentenceStart,
 				});
-			} else {
-				console.log(`Invalid mapping result: ${originalStart}-${originalEnd}`);
 			}
 		}
 	}
 
 	return result;
-}
-
-// Helper function to map positions from cleaned text back to original text
-function mapCleanedPositionToOriginal(cleanedPos: number, originalText: string, _cleanedText: string): number {
-	// For this specific issue, we need to handle the fact that cleanMarkdownFormatting
-	// removes list markers that appear both at the beginning and after spaces
-
-	// Clamp the cleaned position to be within bounds
-	const clampedCleanedPos = Math.max(0, Math.min(cleanedPos, originalText.length));
-
-	// Count the number of removed characters before the target position
-	let removedChars = 0;
-
-	// Find list markers at the beginning
-	const beginningMatch = originalText.match(/^(\s*)([-*+]|\d+\.)\s+/);
-	if (beginningMatch) {
-		removedChars += beginningMatch[0].length;
-	}
-
-	// Find list markers after spaces
-	const spaceMarkerRegex = /\s+([-*+]|\d+\.)\s+/g;
-	let match;
-	while ((match = spaceMarkerRegex.exec(originalText)) !== null) {
-		// Check if this marker appears before our target position
-		if (match.index <= clampedCleanedPos + removedChars) {
-			// We found a list marker that was removed, account for it
-			removedChars += match[0].length - 1; // -1 because we keep the first space
-		}
-	}
-
-	// Ensure the result is within bounds
-	return Math.max(0, Math.min(clampedCleanedPos + removedChars, originalText.length));
 }
