@@ -1,8 +1,13 @@
+// CodeMirror extension that triggers grammar checks as the user types.
+// It collects the changed range, expands it to sentence boundaries and
+// schedules a check after a short delay.
 import { EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import { StateField, StateEffect, Extension } from "@codemirror/state";
 import { MarkdownView } from "obsidian";
 import GraziePlugin from "../main";
 
+// Expand the changed range so that language detection and grammar checking
+// receive enough context around the edit.
 function expandRangeToWordBoundaries(view: EditorView, from: number, to: number): { from: number; to: number } {
 	const doc = view.state.doc;
 	const text = doc.toString();
@@ -74,6 +79,7 @@ interface RealtimeState {
 const setTimer = StateEffect.define<number | null>();
 const setRange = StateEffect.define<{ from: number; to: number } | null>();
 
+// Keep track of the range that needs checking and the debounce timer.
 const realtimeStateField = StateField.define<RealtimeState>({
 	create() {
 		return { timer: null, from: null, to: null };

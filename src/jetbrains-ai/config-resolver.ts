@@ -1,3 +1,4 @@
+// Fetch and parse JetBrains AI platform configuration to find the best API URL.
 import { requestUrl } from "obsidian";
 
 export interface PlatformConfig {

@@ -1,3 +1,5 @@
+// Utility types and helper for extracting grammar-checkable text from a
+// markdown document and mapping positions back to the original source.
 export interface TextSegment {
 	text: string;
 	originalPosition: number;
@@ -389,7 +391,9 @@ export class MarkdownTextProcessor {
 	}
 
 	/**
-	 * Map position through whitespace normalization (trim + replace /\s+/g with " ")
+	 * Map a position in normalized text back to the same location in the
+	 * original string. This accounts for trimming and collapsing whitespace
+	 * which happens before sending text to the grammar service.
 	 */
 	private mapThroughWhitespaceNormalization(
 		processedPos: number,

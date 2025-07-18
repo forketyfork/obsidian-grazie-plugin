@@ -370,6 +370,8 @@ export function grammarDecorationsExtension(): Extension {
 }
 
 // Helper function to map grammar problems to editor positions
+// Convert problem offsets returned by the API into document positions so that
+// decorations can be placed in the editor.
 export function mapProblemsToPositions(
 	problems: ProblemWithSentence[],
 	sentences: string[],
@@ -381,6 +383,10 @@ export function mapProblemsToPositions(
 	const textProcessor = new MarkdownTextProcessor();
 
 	const extractedText = processedTextResult.extractedText;
+
+	// Each problem refers to a sentence returned by the API. We locate the
+	// sentence within the extracted text and then convert the offsets back
+	// to positions in the original document.
 
 	// Process each problem
 	for (const problemWithSentence of problems) {

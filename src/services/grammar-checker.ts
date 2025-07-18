@@ -1,3 +1,5 @@
+// Wraps the JetBrains AI client and handles text extraction, language detection
+// and response processing.
 import {
 	JetBrainsAIClient,
 	SentenceWithProblems,
@@ -23,12 +25,15 @@ export interface GrammarCheckResult {
 	languageDetectionResult?: LanguageDetectionResult;
 }
 
+// High level service that communicates with the JetBrains AI Platform and maps
+// results back into the original document.
 export class GrammarCheckerService {
 	private client: JetBrainsAIClient | null = null;
 	private authService: AuthenticationService;
 	private textProcessor: MarkdownTextProcessor;
 	private languageDetector: LanguageDetectorService;
 
+	// Settings and auth service are provided by the main plugin class
 	constructor(
 		private settings: GraziePluginSettings,
 		authService: AuthenticationService
@@ -152,6 +157,8 @@ export class GrammarCheckerService {
 		}
 	}
 
+	// Split text into sentences before sending it to the API. The API
+	// expects individual sentences with punctuation preserved.
 	private splitIntoSentences(text: string): string[] {
 		// Clean up the text and handle markdown formatting
 		const cleanedText = this.textProcessor.cleanMarkdownFormatting(text.trim());
@@ -245,7 +252,7 @@ export class GrammarCheckerService {
 			}
 		}
 
-		// Filter problems based on confidence level
+		// Drop low confidence suggestions according to settings
 		const filteredProblems = allProblems.filter(problem => {
 			const confidence = problem.info.confidence === ConfidenceLevel.HIGH ? 1.0 : 0.5;
 			return confidence >= this.settings.minConfidenceLevel;
