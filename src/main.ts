@@ -14,7 +14,7 @@ export default class GraziePlugin extends Plugin {
 	private authService: AuthenticationService | null = null;
 	private editorDecorator: EditorDecoratorService | null = null;
 	private statusBarItem: HTMLElement | null = null;
-	private statusIcon: HTMLElement | null = null;
+	private statusIcon: HTMLImageElement | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -30,8 +30,11 @@ export default class GraziePlugin extends Plugin {
 		}
 
 		this.statusBarItem = this.addStatusBarItem();
-		this.statusIcon = document.createElement("span");
+		this.statusIcon = document.createElement("img");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
+		this.statusIcon.src = "images/grazie_logo.png";
+		this.statusIcon.alt = "Grazie";
+		this.statusIcon.title = "Grazie Plugin";
 		this.statusBarItem.appendChild(this.statusIcon);
 
 		// Register CodeMirror extensions

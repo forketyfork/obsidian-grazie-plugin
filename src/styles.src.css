@@ -57,21 +57,27 @@
 	margin-top: 4px;
 }
 
-/* Status bar spinner */
+/* Status bar logo */
 .grazie-plugin-status-icon {
 	display: inline-block;
 	margin-left: 4px;
+	height: 16px;
+	width: 16px;
+	vertical-align: middle;
 }
 
 .grazie-plugin-spin {
-	animation: grazie-plugin-spin 1s linear infinite;
+	animation: grazie-plugin-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes grazie-plugin-spin {
-	from {
-		transform: rotate(0deg);
+@keyframes grazie-plugin-pulse {
+	0% {
+		opacity: 1;
 	}
-	to {
-		transform: rotate(360deg);
+	50% {
+		opacity: 0.4;
+	}
+	100% {
+		opacity: 1;
 	}
 }
