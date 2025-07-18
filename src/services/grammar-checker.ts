@@ -50,17 +50,12 @@ export class GrammarCheckerService {
 	}
 
 	async checkText(text: string): Promise<GrammarCheckResult> {
-		console.log("=== Grammar Check Started ===");
-		console.log(`Input text length: ${text.length}`);
-		console.log(`Input text preview: ${text.substring(0, 200)}${text.length > 200 ? "..." : ""}`);
-
 		if (!this.client) {
 			console.error("Grammar checker not initialized");
 			throw new Error("Grammar checker not initialized");
 		}
 
 		if (!text.trim()) {
-			console.log("Empty text, returning empty result");
 			return {
 				problems: [],
 				processedSentences: [],
@@ -72,13 +67,8 @@ export class GrammarCheckerService {
 		try {
 			// Extract text for grammar checking, excluding code blocks, etc.
 			const processedText = this.textProcessor.extractTextForGrammarCheck(text);
-			console.log(`Processed text length: ${processedText.extractedText.length}`);
-			console.log(
-				`Processed text preview: ${processedText.extractedText.substring(0, 200)}${processedText.extractedText.length > 200 ? "..." : ""}`
-			);
 
 			if (!processedText.extractedText.trim()) {
-				console.log("No text remaining after processing, returning empty result");
 				return {
 					problems: [],
 					processedSentences: [],
@@ -92,7 +82,6 @@ export class GrammarCheckerService {
 			let languageToUse: SupportedLanguage = this.settings.language as SupportedLanguage;
 
 			if (this.settings.autoDetectLanguage) {
-				console.log("Auto-detecting language...");
 				try {
 					const textSamples = this.languageDetector.extractTextSamples(processedText.extractedText);
 					languageDetectionResult = this.languageDetector.detectLanguageFromSamples(
@@ -100,20 +89,13 @@ export class GrammarCheckerService {
 						this.settings.language as SupportedLanguage
 					);
 					languageToUse = languageDetectionResult.detectedLanguage;
-					console.log(
-						`Language detection result: ${languageToUse} (confidence: ${languageDetectionResult.confidence})`
-					);
 				} catch (error) {
 					console.error("Language detection failed, using default language:", error);
 				}
-			} else {
-				console.log(`Using configured language: ${languageToUse}`);
 			}
 
 			// Split extracted text into sentences
 			const sentences = this.splitIntoSentences(processedText.extractedText);
-			console.log(`Split into ${sentences.length} sentences`);
-			console.log("Sentences:", sentences);
 
 			// Check for reasonable limits
 			if (sentences.length > 100) {
@@ -137,17 +119,13 @@ export class GrammarCheckerService {
 				enabledServices.push(CorrectionServiceType.SPELL);
 			}
 
-			console.log(`Enabled services: ${enabledServices.join(", ")}`);
-
 			const request = {
 				sentences,
 				language: this.mapLanguageCode(languageToUse),
 				services: enabledServices,
 			};
 
-			console.log("Sending grammar check request...");
 			const response = await this.client.checkGrammar(request);
-			console.log("Grammar check response received");
 
 			// Validate and process API response
 			let corrections: SentenceWithProblems[] = [];
@@ -161,17 +139,11 @@ export class GrammarCheckerService {
 				corrections = response;
 			}
 
-			console.log(`Processing ${corrections.length} sentence corrections`);
 			const result = this.processGrammarResponse(corrections);
 
 			// Add language detection information to the result
 			result.detectedLanguage = languageToUse;
 			result.languageDetectionResult = languageDetectionResult;
-
-			console.log(`=== Grammar Check Complete ===`);
-			console.log(`Found ${result.totalProblems} problems`);
-			console.log(`Has errors: ${result.hasErrors}`);
-			console.log(`Problems:`, result.problems);
 
 			return result;
 		} catch (error) {

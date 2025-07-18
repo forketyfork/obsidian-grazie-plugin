@@ -167,7 +167,7 @@ describe("ConfigurationUrlResolver", () => {
 		});
 
 		it("should create resolver with custom config", () => {
-			const resolver = ConfigurationUrlResolver.createWithCustomConfig(
+			const resolver = new ConfigurationUrlResolver(
 				"https://custom-config.example.com/config.json",
 				"https://custom-api.example.com/"
 			);

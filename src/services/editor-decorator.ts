@@ -107,20 +107,4 @@ export class EditorDecoratorService {
 			effects: setGrammarProblems.of(problems),
 		});
 	}
-
-	/**
-	 * Check if a view has grammar decorations
-	 */
-	hasDecorations(view: EditorView): boolean {
-		const state = view.state.field(grammarDecorationsField, false);
-		return state ? state.problems.length > 0 : false;
-	}
-
-	/**
-	 * Get grammar problems from a view
-	 */
-	getProblems(view: EditorView): GrammarProblemWithPosition[] {
-		const state = view.state.field(grammarDecorationsField, false);
-		return state ? state.problems : [];
-	}
 }

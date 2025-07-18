@@ -104,13 +104,6 @@ export class LanguageDetectorService {
 	}
 
 	/**
-	 * Checks if the given language code is supported by the grammar checker.
-	 */
-	isSupportedLanguage(language: string): language is SupportedLanguage {
-		return language === "en" || language === "de" || language === "ru" || language === "uk";
-	}
-
-	/**
 	 * Extracts text samples from different parts of the document for language detection.
 	 * This helps with mixed-language documents by analyzing different sections.
 	 */

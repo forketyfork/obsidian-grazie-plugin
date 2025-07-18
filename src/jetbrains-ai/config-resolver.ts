@@ -135,8 +135,4 @@ export class ConfigurationUrlResolver {
 	static createDefault(): ConfigurationUrlResolver {
 		return new ConfigurationUrlResolver();
 	}
-
-	static createWithCustomConfig(configUrl: string, fallbackUrl?: string): ConfigurationUrlResolver {
-		return new ConfigurationUrlResolver(configUrl, fallbackUrl);
-	}
 }

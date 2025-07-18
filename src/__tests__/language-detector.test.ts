@@ -100,21 +100,6 @@ describe("LanguageDetectorService", () => {
 		});
 	});
 
-	describe("isSupportedLanguage", () => {
-		it("should return true for supported languages", () => {
-			expect(service.isSupportedLanguage("en")).toBe(true);
-			expect(service.isSupportedLanguage("de")).toBe(true);
-			expect(service.isSupportedLanguage("ru")).toBe(true);
-			expect(service.isSupportedLanguage("uk")).toBe(true);
-		});
-
-		it("should return false for unsupported languages", () => {
-			expect(service.isSupportedLanguage("fr")).toBe(false);
-			expect(service.isSupportedLanguage("es")).toBe(false);
-			expect(service.isSupportedLanguage("zh")).toBe(false);
-		});
-	});
-
 	describe("extractTextSamples", () => {
 		it("should extract samples from text", () => {
 			const text = "First paragraph.\n\nSecond paragraph here.\n\nThird paragraph content.\n\nFourth paragraph text.";

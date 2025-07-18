@@ -88,13 +88,6 @@ export class ObsidianAuthTokenManager implements AuthTokenManager {
 	}
 }
 
-export class TokenValidationError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = "TokenValidationError";
-	}
-}
-
 export class AuthenticationService {
 	private tokenManager: AuthTokenManager;
 
@@ -106,7 +99,7 @@ export class AuthenticationService {
 		const token = this.tokenManager.getToken();
 
 		if (!token) {
-			throw new TokenValidationError(
+			throw new Error(
 				"No authentication token configured. Please set the JETBRAINS_AI_TOKEN environment variable or configure the token in settings."
 			);
 		}
@@ -124,12 +117,6 @@ export class AuthenticationService {
 
 	isAuthenticated(): boolean {
 		return this.tokenManager.isTokenConfigured();
-	}
-
-	validateTokenAsync(token: string): boolean {
-		// For now, we do basic validation
-		// In the future, we could make an API call to validate the token
-		return this.tokenManager.validateToken(token);
 	}
 
 	static create(plugin: PluginWithSettings): AuthenticationService {

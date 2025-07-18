@@ -165,7 +165,7 @@ describe("JetBrainsAIClient", () => {
 		});
 
 		it("should create client with application token", () => {
-			const client = JetBrainsAIClient.createWithApplicationToken("app-token");
+			const client = new JetBrainsAIClient({ token: "app-token", userAuth: false });
 			expect(client).toBeInstanceOf(JetBrainsAIClient);
 		});
 	});

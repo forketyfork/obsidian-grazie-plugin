@@ -12,26 +12,6 @@ export interface GecRequest {
 	services?: CorrectionServiceType[];
 }
 
-export interface GecRequestWithExclusions {
-	sentences: SentenceWithExclusions[];
-	language: string;
-	services?: CorrectionServiceType[];
-}
-
-export interface SentenceWithExclusions {
-	sentence: string;
-	exclusions?: Exclusion[];
-}
-
-export interface Exclusion {
-	offset: number;
-	kind: ExclusionKind;
-}
-
-export enum ExclusionKind {
-	Markup = "Markup",
-}
-
 export enum CorrectionServiceType {
 	MLEC = "MLEC",
 	SPELL = "SPELL",
@@ -50,7 +30,6 @@ export interface ProblemHighlighting {
 
 export interface ProblemFix {
 	parts: FixPart[];
-	batchId?: string;
 }
 
 export interface FixPart {
@@ -64,9 +43,6 @@ export interface Problem {
 	message: string;
 	highlighting: ProblemHighlighting;
 	fixes: ProblemFix[];
-	experimental?: unknown;
-	condition?: unknown;
-	actionSuggestions?: ActionSuggestion[];
 }
 
 export interface KindInfo {
@@ -99,13 +75,6 @@ export enum ProblemCategory {
 export enum ConfidenceLevel {
 	LOW = "LOW",
 	HIGH = "HIGH",
-}
-
-export interface ActionSuggestion {
-	type: string;
-	parameterId?: string;
-	parameterDisplayName?: string;
-	suggestedValue?: unknown;
 }
 
 export interface SentenceWithProblems {
@@ -156,23 +125,6 @@ export class JetBrainsAIClient {
 		return response as SentenceWithProblems[];
 	}
 
-	async checkGrammarWithExclusions(request: GecRequestWithExclusions): Promise<SentenceWithProblems[]> {
-		await this.ensureInitialized();
-		const endpoint = this.getEndpoint("/v5/gec/correct/v4");
-
-		const response = await this.makeRequest(endpoint, {
-			sentences: request.sentences,
-			language: request.language,
-			services: request.services ?? [
-				CorrectionServiceType.MLEC,
-				CorrectionServiceType.SPELL,
-				CorrectionServiceType.RULE,
-			],
-		});
-
-		return response as SentenceWithProblems[];
-	}
-
 	private async ensureInitialized(): Promise<void> {
 		if (!this.baseUrl) {
 			await this.initialize();
@@ -191,20 +143,6 @@ export class JetBrainsAIClient {
 
 	private async makeRequest(url: string, body: unknown): Promise<unknown> {
 		const requestBody = JSON.stringify(body);
-		const requestTimestamp = new Date().toISOString();
-
-		// Log request details (skip during tests to avoid confusion)
-		console.log("=== JetBrains AI API Request ===");
-		console.log(`Timestamp: ${requestTimestamp}`);
-		console.log(`URL: ${url}`);
-		console.log(`Method: POST`);
-		console.log("Headers:", {
-			"Content-Type": "application/json",
-			"User-Agent": JetBrainsAIClient.USER_AGENT,
-			"Grazie-Authenticate-JWT": this.authConfig.token ? `${this.authConfig.token.substring(0, 20)}...` : "None",
-		});
-		console.log("Request Body:", requestBody);
-		console.log("Request Body (parsed):", body);
 
 		try {
 			const response = await requestUrl({
@@ -218,16 +156,6 @@ export class JetBrainsAIClient {
 				body: requestBody,
 				throw: false,
 			});
-
-			const responseTimestamp = new Date().toISOString();
-
-			// Log response details (skip during tests to avoid confusion)
-			console.log("=== JetBrains AI API Response ===");
-			console.log(`Timestamp: ${responseTimestamp}`);
-			console.log(`Status: ${response.status}`);
-			console.log("Response Headers:", response.headers);
-			console.log("Response Body (raw):", response.text);
-			console.log("Response Body (parsed):", response.json);
 
 			if (response.status === 401) {
 				console.error("Authentication failed - Status 401");
@@ -256,13 +184,9 @@ export class JetBrainsAIClient {
 				throw new Error(`Expected JSON response, got ${contentType}`);
 			}
 
-			console.log("=== Request/Response Complete ===");
 			return response.json as unknown;
 		} catch (error) {
-			console.error("=== JetBrains AI API Error ===");
-			console.error("Error details:", error);
-			console.error("Request URL:", url);
-			console.error("Request Body:", requestBody);
+			console.error("JetBrains AI API Error:", error);
 
 			if (error instanceof Error) {
 				throw new Error(`API request failed: ${error.message}`);
@@ -273,9 +197,5 @@ export class JetBrainsAIClient {
 
 	static createWithUserToken(token: string, configResolver?: ConfigurationUrlResolver): JetBrainsAIClient {
 		return new JetBrainsAIClient({ token, userAuth: true }, configResolver);
-	}
-
-	static createWithApplicationToken(token: string, configResolver?: ConfigurationUrlResolver): JetBrainsAIClient {
-		return new JetBrainsAIClient({ token, userAuth: false }, configResolver);
 	}
 }

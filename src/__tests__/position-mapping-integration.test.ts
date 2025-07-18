@@ -45,7 +45,6 @@ describe("Position Mapping Integration Test", () => {
 			isAuthenticated: jest.fn().mockReturnValue(true),
 			setToken: jest.fn(),
 			clearToken: jest.fn(),
-			validateTokenAsync: jest.fn().mockReturnValue(true),
 		} as unknown as AuthenticationService;
 
 		// Initialize services
@@ -167,10 +166,6 @@ describe("Position Mapping Integration Test", () => {
 		expect(firstLineProblem.from).toBe(12);
 		expect(firstLineProblem.to).toBe(17);
 		expect(documentContent.substring(firstLineProblem.from, firstLineProblem.to)).toBe("aauch");
-
-		// The main test passes - the position mapping fix is working correctly
-		// The first line correctly highlights "aauch" at positions 12-17
-		console.log("✅ Position mapping integration test passed - fix is working correctly");
 	});
 
 	/**
