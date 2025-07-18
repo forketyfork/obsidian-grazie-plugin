@@ -1,3 +1,5 @@
+// Entry point for the Obsidian Grazie plugin. The class wires together the
+// grammar checker, editor decorations and user settings.
 import { Plugin, MarkdownView, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
@@ -18,12 +20,13 @@ export default class GraziePlugin extends Plugin {
 	private statusIcon: HTMLElement | null = null;
 
 	async onload() {
+		// Read settings and prepare services before attaching any editor extensions
 		await this.loadSettings();
 
 		// Register custom Grazie icon
 		addIcon("grazie", GRAZIE_RIBBON_ICON);
 
-		// Initialize services
+		// Create grammar checker and helper services
 		try {
 			this.authService = AuthenticationService.create(this);
 			this.grammarChecker = new GrammarCheckerService(this.settings, this.authService);
@@ -33,6 +36,7 @@ export default class GraziePlugin extends Plugin {
 			return;
 		}
 
+		// Add a small spinner icon to indicate when checks are running
 		this.statusBarItem = this.addStatusBarItem();
 		this.statusIcon = document.createElement("div");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
@@ -146,6 +150,7 @@ export default class GraziePlugin extends Plugin {
 		}
 	}
 
+	// Called by the realtime extension to check only the edited portion of the document
 	async checkRange(view: EditorView, from: number, to: number) {
 		const activeFile = this.app.workspace.getActiveFile();
 

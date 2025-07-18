@@ -1,3 +1,5 @@
+// Minimal HTTP client for the JetBrains AI grammar correction API.
+// Handles URL resolution, authentication headers and error handling.
 import { requestUrl } from "obsidian";
 import { ConfigurationUrlResolver } from "./config-resolver";
 

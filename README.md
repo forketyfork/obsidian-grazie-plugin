@@ -6,27 +6,27 @@ An Obsidian plugin that integrates JetBrains AI Platform grammar correction func
 
 🚧 **Currently in Development** 🚧
 
-This project is in active development. The development infrastructure is complete, but the core functionality is still being implemented.
+The project is usable but still under active development. Core grammar checking works and the interface is stable, but a few advanced features are still missing.
 
-### What's Complete ✅
+### Implemented Features ✅
 
 - TypeScript build system with ESBuild
 - Testing framework with Jest
 - Code quality tools (ESLint, Prettier)
 - Plugin manifest and configuration
 - CSS build pipeline
-
-### What's Being Developed 🔄
-
 - JetBrains AI Platform integration
 - Grammar and spell checking engine
-- Real-time error highlighting (basic debounced checking implemented)
-- Incremental checks send only changed text to the API for better performance
+- Real-time error highlighting with incremental checks
 - Status bar spinner indicates active grammar checking
-- User interface components
-- Hover tooltips with error descriptions
-- Grammar check runs automatically when opening a markdown file
-- Click highlighted text to select a suggestion from a dropdown
+- Hover tooltips and clickable suggestions
+- Automatic grammar check when a file is opened
+- Manual check command available from the ribbon
+
+### Planned Features 🔄
+
+- Personal dictionary for custom words
+- File level ignore rules
 
 ## What This Plugin Will Become
 
@@ -43,7 +43,7 @@ The Obsidian Grazie Plugin will bring advanced grammar and spell checking to Obs
 ## Requirements
 
 - Obsidian v0.15.0 or higher
-- JetBrains AI Platform authentication token (for development/testing)
+- JetBrains AI Platform authentication token (set the `JETBRAINS_AI_TOKEN` environment variable or configure it in the plugin settings)
 
 ## Development
 
