@@ -1,5 +1,6 @@
 import { mapProblemsToPositions, GrammarProblemWithPosition, createDecorations } from "../editor/decorations";
 import { Problem, ProblemCategory, CorrectionServiceType, ConfidenceLevel } from "../jetbrains-ai";
+import { ProblemWithSentence } from "../services/grammar-checker";
 import { MarkdownTextProcessor } from "../services/text-processor";
 
 describe("mapProblemsToPositions", () => {
@@ -18,12 +19,12 @@ describe("mapProblemsToPositions", () => {
 		const sentences = ["This is a test sentence.", "This is another test sentence with a dirh word."];
 
 		// Mock a problem returned by the API for the word "dirh" in the second sentence
-		// The API returns positions relative to the concatenated text (sentences.join(" "))
-		const concatenatedText = sentences.join(" ");
-		const dirhStartInConcatenated = concatenatedText.indexOf("dirh");
-		const dirhEndInConcatenated = dirhStartInConcatenated + 4;
+		// The API returns positions relative to the individual sentence, not concatenated text
+		const secondSentence = sentences[1];
+		const dirhStartInSentence = secondSentence.indexOf("dirh");
+		const dirhEndInSentence = dirhStartInSentence + 4;
 
-		const problems: Problem[] = [
+		const problems: ProblemWithSentence[] = [
 			{
 				message: "Possible spelling mistake",
 				info: {
@@ -36,8 +37,8 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: dirhStartInConcatenated,
-							endExclusive: dirhEndInConcatenated,
+							start: dirhStartInSentence,
+							endExclusive: dirhEndInSentence,
 						},
 					],
 					onHover: [],
@@ -49,13 +50,14 @@ describe("mapProblemsToPositions", () => {
 								type: "Change",
 								text: "dirt",
 								range: {
-									start: dirhStartInConcatenated,
-									endExclusive: dirhEndInConcatenated,
+									start: dirhStartInSentence,
+									endExclusive: dirhEndInSentence,
 								},
 							},
 						],
 					},
 				],
+				sentenceIndex: 1,
 			},
 		];
 
@@ -83,11 +85,12 @@ describe("mapProblemsToPositions", () => {
 
 		const sentences = ["This is a tset sentence.", "This is another test sentence."];
 
-		const concatenatedText = sentences.join(" ");
-		const tsetStartInConcatenated = concatenatedText.indexOf("tset");
-		const tsetEndInConcatenated = tsetStartInConcatenated + 4;
+		// Calculate positions relative to the first sentence (sentenceIndex: 0)
+		const firstSentence = sentences[0];
+		const tsetStartInSentence = firstSentence.indexOf("tset");
+		const tsetEndInSentence = tsetStartInSentence + 4;
 
-		const problems: Problem[] = [
+		const problems: ProblemWithSentence[] = [
 			{
 				message: "Possible spelling mistake",
 				info: {
@@ -100,8 +103,8 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: tsetStartInConcatenated,
-							endExclusive: tsetEndInConcatenated,
+							start: tsetStartInSentence,
+							endExclusive: tsetEndInSentence,
 						},
 					],
 					onHover: [],
@@ -113,13 +116,14 @@ describe("mapProblemsToPositions", () => {
 								type: "Change",
 								text: "test",
 								range: {
-									start: tsetStartInConcatenated,
-									endExclusive: tsetEndInConcatenated,
+									start: tsetStartInSentence,
+									endExclusive: tsetEndInSentence,
 								},
 							},
 						],
 					},
 				],
+				sentenceIndex: 0,
 			},
 		];
 
@@ -147,9 +151,13 @@ describe("mapProblemsToPositions", () => {
 
 		const sentences = ["This is a tset sentence.", "This is another test sentence with a dirh word."];
 
-		const concatenatedText = sentences.join(" ");
+		// Calculate positions relative to individual sentences
+		const firstSentence = sentences[0];
+		const secondSentence = sentences[1];
+		const tsetStartInSentence = firstSentence.indexOf("tset");
+		const dirhStartInSentence = secondSentence.indexOf("dirh");
 
-		const problems: Problem[] = [
+		const problems: ProblemWithSentence[] = [
 			{
 				message: "Possible spelling mistake",
 				info: {
@@ -162,13 +170,14 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: concatenatedText.indexOf("tset"),
-							endExclusive: concatenatedText.indexOf("tset") + 4,
+							start: tsetStartInSentence,
+							endExclusive: tsetStartInSentence + 4,
 						},
 					],
 					onHover: [],
 				},
 				fixes: [],
+				sentenceIndex: 0,
 			},
 			{
 				message: "Possible spelling mistake",
@@ -182,13 +191,14 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: concatenatedText.indexOf("dirh"),
-							endExclusive: concatenatedText.indexOf("dirh") + 4,
+							start: dirhStartInSentence,
+							endExclusive: dirhStartInSentence + 4,
 						},
 					],
 					onHover: [],
 				},
 				fixes: [],
+				sentenceIndex: 1,
 			},
 		];
 
@@ -269,11 +279,12 @@ describe("mapProblemsToPositions", () => {
 		}
 
 		// Test the same scenario as above but with real sentence splitting
-		const concatenatedText = processedSentences.join(" ");
-		const dirhStartInConcatenated = concatenatedText.indexOf("dirh");
-		const dirhEndInConcatenated = dirhStartInConcatenated + 4;
+		// Calculate position relative to the second sentence (sentenceIndex: 1)
+		const secondSentence = processedSentences[1];
+		const dirhStartInSentence = secondSentence.indexOf("dirh");
+		const dirhEndInSentence = dirhStartInSentence + 4;
 
-		const problems: Problem[] = [
+		const problems: ProblemWithSentence[] = [
 			{
 				message: "Possible spelling mistake",
 				info: {
@@ -286,13 +297,14 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: dirhStartInConcatenated,
-							endExclusive: dirhEndInConcatenated,
+							start: dirhStartInSentence,
+							endExclusive: dirhEndInSentence,
 						},
 					],
 					onHover: [],
 				},
 				fixes: [],
+				sentenceIndex: 1,
 			},
 		];
 
@@ -375,11 +387,12 @@ describe("mapProblemsToPositions", () => {
 		}
 
 		// Test the same scenario as above but with real sentence splitting
-		const concatenatedText = processedSentences.join(" ");
-		const dirhStartInConcatenated = concatenatedText.indexOf("dirh");
-		const dirhEndInConcatenated = dirhStartInConcatenated + 4;
+		// Calculate position relative to the second sentence (sentenceIndex: 1)
+		const secondSentence = processedSentences[1];
+		const dirhStartInSentence = secondSentence.indexOf("dirh");
+		const dirhEndInSentence = dirhStartInSentence + 4;
 
-		const problems: Problem[] = [
+		const problems: ProblemWithSentence[] = [
 			{
 				message: "Possible spelling mistake",
 				info: {
@@ -392,13 +405,14 @@ describe("mapProblemsToPositions", () => {
 				highlighting: {
 					always: [
 						{
-							start: dirhStartInConcatenated,
-							endExclusive: dirhEndInConcatenated,
+							start: dirhStartInSentence,
+							endExclusive: dirhEndInSentence,
 						},
 					],
 					onHover: [],
 				},
 				fixes: [],
+				sentenceIndex: 1,
 			},
 		];
 
@@ -418,6 +432,202 @@ describe("mapProblemsToPositions", () => {
 		// Verify the highlighted text is correct
 		const highlightedText = originalText.substring(problem.from, problem.to);
 		expect(highlightedText).toBe("dirh");
+	});
+
+	it("should handle extra spaces correctly - reproduces highlighting slide bug", () => {
+		// Test the exact scenario described by the user
+		const originalText = "Hello  my firend?";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		// The extracted text will have normalized whitespace: "Hello my firend?"
+
+		// Simulate the sentence that would be processed (single sentence)
+		const sentences = ["Hello my firend?"];
+
+		// The problem should be on "firend" which is at position 9 in the sentence
+		const sentenceText = sentences[0];
+		const firendStartInSentence = sentenceText.indexOf("firend");
+		const firendEndInSentence = firendStartInSentence + 6;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: firendStartInSentence,
+							endExclusive: firendEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		// "firend" should be at position 9 in the original text "Hello  my firend?"
+		const expectedStart = originalText.indexOf("firend");
+		const expectedEnd = expectedStart + 6;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("firend");
+	});
+
+	it("should handle extra spaces before highlighted word - reproduces highlighting slide bug", () => {
+		// Test the scenario with spaces before the highlighted word
+		const originalText = "Hello my  firend?";
+		const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+
+		// The extracted text will have normalized whitespace: "Hello my firend?"
+
+		// Simulate the sentence that would be processed (single sentence)
+		const sentences = ["Hello my firend?"];
+
+		// The problem should be on "firend" which is at position 9 in the sentence
+		const sentenceText = sentences[0];
+		const firendStartInSentence = sentenceText.indexOf("firend");
+		const firendEndInSentence = firendStartInSentence + 6;
+
+		const problems: ProblemWithSentence[] = [
+			{
+				message: "Possible spelling mistake",
+				info: {
+					id: { id: "spelling-error" },
+					category: ProblemCategory.SPELLING,
+					service: CorrectionServiceType.SPELL,
+					displayName: "Spelling Error",
+					confidence: ConfidenceLevel.HIGH,
+				},
+				highlighting: {
+					always: [
+						{
+							start: firendStartInSentence,
+							endExclusive: firendEndInSentence,
+						},
+					],
+					onHover: [],
+				},
+				fixes: [],
+				sentenceIndex: 0,
+			},
+		];
+
+		const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+		expect(problemsWithPositions).toHaveLength(1);
+
+		const problem = problemsWithPositions[0];
+
+		// The problem should be mapped to the correct position in the original text
+		// "firend" should be at position 10 in the original text "Hello my  firend?"
+		const expectedStart = originalText.indexOf("firend");
+		const expectedEnd = expectedStart + 6;
+
+		expect(problem.from).toBe(expectedStart);
+		expect(problem.to).toBe(expectedEnd);
+
+		// Verify the highlighted text is correct
+		const highlightedText = originalText.substring(problem.from, problem.to);
+		expect(highlightedText).toBe("firend");
+	});
+
+	it("should handle multiple types of extra spaces", () => {
+		// Test multiple scenarios with different space patterns
+		const testCases = [
+			{
+				name: "spaces after words",
+				originalText: "Hello  my firend?",
+				word: "firend",
+			},
+			{
+				name: "spaces before words",
+				originalText: "Hello my  firend?",
+				word: "firend",
+			},
+			{
+				name: "spaces around words",
+				originalText: "Hello  my  firend?",
+				word: "firend",
+			},
+			{
+				name: "multiple spaces",
+				originalText: "Hello   my   firend?",
+				word: "firend",
+			},
+			{
+				name: "leading spaces",
+				originalText: "  Hello my firend?",
+				word: "firend",
+			},
+		];
+
+		testCases.forEach(({ originalText, word }) => {
+			const processedTextResult = textProcessor.extractTextForGrammarCheck(originalText);
+			const sentences = [processedTextResult.extractedText];
+
+			const sentenceText = sentences[0];
+			const wordStartInSentence = sentenceText.indexOf(word);
+			const wordEndInSentence = wordStartInSentence + word.length;
+
+			const problems: ProblemWithSentence[] = [
+				{
+					message: "Possible spelling mistake",
+					info: {
+						id: { id: "spelling-error" },
+						category: ProblemCategory.SPELLING,
+						service: CorrectionServiceType.SPELL,
+						displayName: "Spelling Error",
+						confidence: ConfidenceLevel.HIGH,
+					},
+					highlighting: {
+						always: [
+							{
+								start: wordStartInSentence,
+								endExclusive: wordEndInSentence,
+							},
+						],
+						onHover: [],
+					},
+					fixes: [],
+					sentenceIndex: 0,
+				},
+			];
+
+			const problemsWithPositions = mapProblemsToPositions(problems, sentences, processedTextResult);
+
+			expect(problemsWithPositions).toHaveLength(1);
+
+			const problem = problemsWithPositions[0];
+
+			// The problem should be mapped to the correct position in the original text
+			const expectedStart = originalText.indexOf(word);
+			const expectedEnd = expectedStart + word.length;
+
+			// Verify the highlighted text is correct
+			const highlightedText = originalText.substring(problem.from, problem.to);
+			expect(highlightedText).toBe(word);
+			expect(problem.from).toBe(expectedStart);
+			expect(problem.to).toBe(expectedEnd);
+		});
 	});
 });
 

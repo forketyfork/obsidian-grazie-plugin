@@ -32,7 +32,7 @@ export default class GraziePlugin extends Plugin {
 		this.statusBarItem = this.addStatusBarItem();
 		this.statusIcon = document.createElement("img");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
-		this.statusIcon.src = "images/grazie_logo.png";
+		this.statusIcon.src = `app://obsidian.md/${this.manifest.id}/images/grazie_logo.png`;
 		this.statusIcon.alt = "Grazie";
 		this.statusIcon.title = "Grazie Plugin";
 		this.statusBarItem.appendChild(this.statusIcon);

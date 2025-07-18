@@ -366,19 +366,66 @@ export class MarkdownTextProcessor {
 	private mapThroughWhitespaceNormalization(
 		processedPos: number,
 		originalText: string,
-		_normalizedText: string
+		normalizedText: string
 	): number {
-		// Count leading whitespace characters that were trimmed
-		let leadingWhitespaceCount = 0;
-		while (leadingWhitespaceCount < originalText.length && /\s/.test(originalText[leadingWhitespaceCount])) {
-			leadingWhitespaceCount++;
+		// If the texts are the same length, no whitespace normalization occurred
+		if (originalText.length === normalizedText.length) {
+			return processedPos;
 		}
 
-		// For the simple case of just leading whitespace removal (like newlines),
-		// we can just add the leading whitespace count to the processed position
-		const mappedPosition = processedPos + leadingWhitespaceCount;
+		// Build a mapping from normalized positions to original positions
+		const positionMap: number[] = [];
+		let originalPos = 0;
+		let normalizedPos = 0;
 
-		// Make sure we don't exceed the original text length
-		return Math.min(mappedPosition, originalText.length);
+		// Skip leading whitespace in original text
+		while (originalPos < originalText.length && /\s/.test(originalText[originalPos])) {
+			originalPos++;
+		}
+
+		while (normalizedPos < normalizedText.length && originalPos < originalText.length) {
+			const originalChar = originalText[originalPos];
+			const normalizedChar = normalizedText[normalizedPos];
+
+			if (originalChar === normalizedChar) {
+				// Direct character match
+				positionMap[normalizedPos] = originalPos;
+				originalPos++;
+				normalizedPos++;
+			} else if (/\s/.test(normalizedChar)) {
+				// Normalized has a space, original might have multiple spaces
+				positionMap[normalizedPos] = originalPos;
+
+				// Skip all consecutive whitespace in original
+				while (originalPos < originalText.length && /\s/.test(originalText[originalPos])) {
+					originalPos++;
+				}
+				normalizedPos++;
+			} else if (/\s/.test(originalChar)) {
+				// Original has whitespace but normalized doesn't at this position
+				// This shouldn't happen with proper normalization, but handle it
+				while (originalPos < originalText.length && /\s/.test(originalText[originalPos])) {
+					originalPos++;
+				}
+			} else {
+				// Characters don't match - this shouldn't happen
+				positionMap[normalizedPos] = originalPos;
+				originalPos++;
+				normalizedPos++;
+			}
+		}
+
+		// Handle position mapping
+		if (processedPos < positionMap.length) {
+			return positionMap[processedPos];
+		} else if (processedPos === normalizedText.length) {
+			// End of text - map to end of original
+			return originalText.length;
+		} else {
+			// Position beyond normalized text - extrapolate
+			const lastMappedPos = positionMap.length > 0 ? positionMap[positionMap.length - 1] : 0;
+			const extraChars = processedPos - positionMap.length;
+			return Math.min(lastMappedPos + extraChars, originalText.length);
+		}
 	}
 }

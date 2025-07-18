@@ -357,7 +357,10 @@ export function mapProblemsToPositions(
 	const extractedText = processedTextResult.extractedText;
 
 	console.log(`🔍 DEBUG: Extracted text: "${extractedText}"`);
-	console.log(`🔍 DEBUG: Sentences:`, sentences.map((s, i) => `${i}: "${s}"`));
+	console.log(
+		`🔍 DEBUG: Sentences:`,
+		sentences.map((s, i) => `${i}: "${s}"`)
+	);
 
 	// Process each problem
 	for (const problemWithSentence of problems) {
@@ -368,7 +371,7 @@ export function mapProblemsToPositions(
 
 		// Find the sentence in the extracted text
 		const sentenceStartInExtracted = extractedText.indexOf(targetSentence);
-		
+
 		if (sentenceStartInExtracted === -1) {
 			console.log(`🔍 DEBUG: Could not find sentence "${targetSentence}" in extracted text`);
 			continue;

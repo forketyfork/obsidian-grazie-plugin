@@ -263,12 +263,12 @@ export class GrammarCheckerService {
 		for (let sentenceIndex = 0; sentenceIndex < response.length; sentenceIndex++) {
 			const sentenceResult = response[sentenceIndex];
 			processedSentences.push(sentenceResult.sentence);
-			
+
 			// Add sentence index to each problem
 			for (const problem of sentenceResult.problems) {
 				allProblems.push({
 					...problem,
-					sentenceIndex
+					sentenceIndex,
 				});
 			}
 		}
