@@ -57,7 +57,7 @@
 	margin-top: 4px;
 }
 
-.grazie-plugin-suggestions-dropdown {
+.grazie-plugin-suggestions-popup {
 	font-size: 0.9em;
 	z-index: 1000;
 	min-width: 200px;
@@ -68,6 +68,35 @@
 	background: var(--background-primary);
 	color: var(--text-normal);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.grazie-plugin-suggestion-button {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	padding: 6px 12px;
+	color: var(--text-normal);
+	cursor: pointer;
+	text-align: left;
+	transition: background-color 0.2s ease;
+	font-size: 0.9em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 400px;
+}
+
+.grazie-plugin-suggestion-button:hover,
+.grazie-plugin-suggestion-button:focus {
+	background: var(--background-modifier-hover);
+	outline: none;
+}
+
+.grazie-plugin-suggestion-button:active {
+	background: var(--background-modifier-active);
 }
 
 /* Status bar logo */

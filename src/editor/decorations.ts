@@ -221,7 +221,7 @@ function applySuggestion(
 // View plugin for handling grammar decorations
 export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 	class {
-		private dropdown: HTMLSelectElement | null = null;
+		private dropdown: HTMLElement | null = null;
 
 		constructor(readonly view: EditorView) {
 			this.view.dom.addEventListener("click", this.onClick);
@@ -255,63 +255,74 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			const suggestions = getProblemSuggestions(problem.problem);
 			if (suggestions.length === 0) return;
 
-			const select = document.createElement("select");
-			select.classList.add("grazie-plugin-suggestions-dropdown");
-			select.size = 1; // Ensure single-select dropdown, not multi-select
-			select.multiple = false; // Explicitly disable multi-select
+			// Create a popup container
+			const popup = document.createElement("div");
+			popup.classList.add("grazie-plugin-suggestions-popup");
 
-			// Add options with formatted text but store the actual replacement as value
-			for (let i = 0; i < suggestions.length; i++) {
-				const suggestion = suggestions[i];
-				const formattedText = formatSuggestionWithDescription(suggestion, problem.problem);
-				const option = new Option(formattedText, suggestion);
-				select.appendChild(option);
-			}
+			// Create suggestion buttons
+			suggestions.forEach((suggestion, _index) => {
+				const button = document.createElement("button");
+				button.classList.add("grazie-plugin-suggestion-button");
+				button.textContent = formatSuggestionWithDescription(suggestion, problem.problem);
+				button.title = formatSuggestionWithDescription(suggestion, problem.problem);
 
-			// Set initial selection to first option
-			if (suggestions.length > 0) {
-				select.selectedIndex = 0;
-			}
+				// Apply suggestion on click
+				button.addEventListener("click", e => {
+					e.preventDefault();
+					e.stopPropagation();
+					applySuggestion(this.view, state, problem, suggestion);
+					this.hideDropdown();
+					window.removeEventListener("click", remove);
+				});
 
-			const coords = this.view.coordsAtPos(problem.to);
+				// Add keyboard support
+				button.addEventListener("keydown", e => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						e.stopPropagation();
+						applySuggestion(this.view, state, problem, suggestion);
+						this.hideDropdown();
+						window.removeEventListener("click", remove);
+					} else if (e.key === "Escape") {
+						this.hideDropdown();
+						window.removeEventListener("click", remove);
+					} else if (e.key === "ArrowDown") {
+						e.preventDefault();
+						const nextButton = button.nextElementSibling as HTMLButtonElement;
+						if (nextButton) nextButton.focus();
+					} else if (e.key === "ArrowUp") {
+						e.preventDefault();
+						const prevButton = button.previousElementSibling as HTMLButtonElement;
+						if (prevButton) prevButton.focus();
+					}
+				});
+
+				popup.appendChild(button);
+			});
+
+			// Position the popup
+			const coords = this.view.coordsAtPos(problem.from);
 			if (!coords) {
 				return;
 			}
-			select.style.position = "absolute";
-			select.style.left = `${coords.left}px`;
-			select.style.top = `${coords.bottom + 2}px`;
+			popup.style.position = "absolute";
+			popup.style.left = `${coords.left}px`;
+			popup.style.top = `${coords.bottom + 2}px`;
 
-			document.body.appendChild(select);
-			this.dropdown = select;
-			select.focus();
+			document.body.appendChild(popup);
+			this.dropdown = popup;
 
+			// Focus the first button
+			const firstButton = popup.querySelector("button") as HTMLButtonElement;
+			if (firstButton) firstButton.focus();
+
+			// Handle clicks outside the popup
 			const remove = (e: MouseEvent) => {
-				if (e.target && !select.contains(e.target as Node)) {
+				if (e.target && !popup.contains(e.target as Node)) {
 					this.hideDropdown();
 					window.removeEventListener("click", remove);
 				}
 			};
-
-			// Apply suggestion immediately when selection changes
-			const applySuggestionHandler = () => {
-				if (select.value) {
-					applySuggestion(this.view, state, problem, select.value);
-				}
-				this.hideDropdown();
-				window.removeEventListener("click", remove);
-			};
-
-			select.addEventListener("change", applySuggestionHandler);
-
-			// Handle Enter key
-			select.addEventListener("keydown", e => {
-				if (e.key === "Enter") {
-					applySuggestionHandler();
-				} else if (e.key === "Escape") {
-					this.hideDropdown();
-					window.removeEventListener("click", remove);
-				}
-			});
 
 			// Set up outside click handler after a short delay to avoid immediate triggering
 			setTimeout(() => {
