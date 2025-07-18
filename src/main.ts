@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView } from "obsidian";
+import { Plugin, MarkdownView, addIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
@@ -7,6 +7,7 @@ import { AuthenticationService } from "./jetbrains-ai/auth";
 import { EditorDecoratorService } from "./services/editor-decorator";
 import { grammarDecorationsExtension } from "./editor/decorations";
 import { realtimeCheckExtension } from "./editor/realtime-check";
+import { GRAZIE_RIBBON_ICON, GRAZIE_STATUS_ICON } from "./icons";
 
 export default class GraziePlugin extends Plugin {
 	settings: GraziePluginSettings;
@@ -14,10 +15,13 @@ export default class GraziePlugin extends Plugin {
 	private authService: AuthenticationService | null = null;
 	private editorDecorator: EditorDecoratorService | null = null;
 	private statusBarItem: HTMLElement | null = null;
-	private statusIcon: HTMLImageElement | null = null;
+	private statusIcon: HTMLElement | null = null;
 
 	async onload() {
 		await this.loadSettings();
+
+		// Register custom Grazie icon
+		addIcon("grazie", GRAZIE_RIBBON_ICON);
 
 		// Initialize services
 		try {
@@ -30,10 +34,9 @@ export default class GraziePlugin extends Plugin {
 		}
 
 		this.statusBarItem = this.addStatusBarItem();
-		this.statusIcon = document.createElement("img");
+		this.statusIcon = document.createElement("div");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
-		this.statusIcon.src = `app://obsidian.md/${this.manifest.id}/images/grazie_logo.png`;
-		this.statusIcon.alt = "Grazie";
+		this.statusIcon.innerHTML = GRAZIE_STATUS_ICON;
 		this.statusIcon.title = "Grazie Plugin";
 		this.statusBarItem.appendChild(this.statusIcon);
 
@@ -44,7 +47,7 @@ export default class GraziePlugin extends Plugin {
 		this.addSettingTab(new GrazieSettingTab(this.app, this));
 
 		// Add ribbon icon for grammar checking
-		this.addRibbonIcon("spell-check", "Check grammar", (_evt: MouseEvent) => {
+		this.addRibbonIcon("grazie", "Check grammar", (_evt: MouseEvent) => {
 			void this.checkCurrentFile();
 		});
 

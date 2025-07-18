@@ -31,18 +31,21 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ### Core Components
 
 1. **JetBrains AI Platform Client**
+
    - Custom TypeScript HTTP client for API communication
    - Configuration management (staging/production, regional URLs)
    - Authentication token handling (user tokens for development)
    - Support for GEC v3 and v4 APIs (with markup exclusions)
 
 2. **Grammar Checking Engine**
+
    - Integration with JetBrains AI Platform GEC service
    - Support for English, German, Russian, Ukrainian
    - Three-tier checking: MLEC (ML), SPELL (dictionary), RULE (rules)
    - Sentence-based processing with problem detection
 
 3. **Obsidian Integration Layer**
+
    - Editor extensions for real-time checking
    - CodeMirror 6 view plugins for decorations
    - Settings panel for configuration
@@ -326,12 +329,15 @@ Based on user experience analysis, we should prioritize:
 ## Expected Challenges
 
 1. **Performance**: Real-time checking without lag
+
    - _Solution_: Implement debouncing and incremental processing
 
 2. **Accuracy**: Handling markdown-specific syntax
+
    - _Solution_: Use exclusions API to ignore markdown syntax
 
 3. **Authentication**: Managing user tokens securely
+
    - _Solution_: Secure token storage and refresh handling
 
 4. **User Experience**: Non-intrusive error highlighting

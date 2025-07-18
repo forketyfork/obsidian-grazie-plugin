@@ -133,6 +133,11 @@
 	vertical-align: middle;
 }
 
+.grazie-plugin-status-icon svg {
+	height: 100%;
+	width: 100%;
+}
+
 .grazie-plugin-spin {
 	animation: grazie-plugin-pulse 1.5s ease-in-out infinite;
 }
