@@ -1,4 +1,5 @@
 import { LanguageDetectorService } from "../services/language-detector";
+import { franc } from "franc-min";
 
 describe("LanguageDetectorService", () => {
 	let service: LanguageDetectorService;
@@ -64,6 +65,14 @@ describe("LanguageDetectorService", () => {
 
 			expect(result.detectedLanguage).toBe("en");
 			expect(result.isSupported).toBe(false);
+		});
+
+		it("caches repeated detections", () => {
+			const text = "This is a sample English text that should be detected as English language.";
+			(franc as jest.Mock).mockClear();
+			service.detectLanguage(text);
+			service.detectLanguage(text);
+			expect((franc as jest.Mock).mock.calls.length).toBe(1);
 		});
 	});
 

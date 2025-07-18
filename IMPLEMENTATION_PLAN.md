@@ -130,7 +130,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Add debouncing using `setTimeout` with 500ms delay
   - Trigger grammar check on `EditorView.updateListener`
   - Manage plugin state through `StateField.define()`
-- [ ] Add LRU cache for language detection results
+- [x] Add LRU cache for language detection results
   - Implement `Map` with size limit (e.g., 100 entries)
   - Cache key: document content hash, value: detected language
   - Implement cache eviction when size exceeds limit
