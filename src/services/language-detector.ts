@@ -1,5 +1,6 @@
 import { franc } from "franc-min";
 import { SupportedLanguage } from "../settings/types";
+import { LRUCache, hashString } from "./lru-cache";
 
 export interface LanguageDetectionResult {
 	detectedLanguage: SupportedLanguage;
@@ -17,13 +18,18 @@ export class LanguageDetectorService {
 
 	private static readonly CONFIDENCE_THRESHOLD = 0.7;
 
+	private cache: LRUCache<string, LanguageDetectionResult>;
+
+	constructor(cacheSize = 100) {
+		this.cache = new LRUCache<string, LanguageDetectionResult>(cacheSize);
+	}
+
 	/**
 	 * Detects the language of the given text.
 	 * Returns the detected language if supported, otherwise returns the fallback language.
 	 */
 	detectLanguage(text: string, fallbackLanguage: SupportedLanguage = "en"): LanguageDetectionResult {
 		if (!text || text.trim().length < 10) {
-			// For very short texts, use fallback
 			return {
 				detectedLanguage: fallbackLanguage,
 				confidence: 0,
@@ -31,31 +37,43 @@ export class LanguageDetectorService {
 			};
 		}
 
+		const key = hashString(text);
+		const cached = this.cache.get(key);
+		if (cached) {
+			return cached;
+		}
+
 		try {
 			const detectedCode = franc(text);
 			const mappedLanguage = LanguageDetectorService.LANGUAGE_MAP[detectedCode];
 
+			let result: LanguageDetectionResult;
+
 			if (mappedLanguage) {
-				return {
+				result = {
 					detectedLanguage: mappedLanguage,
-					confidence: 1.0, // franc doesn't provide confidence, so we assume high confidence for supported languages
+					confidence: 1.0, // franc doesn't provide confidence
 					isSupported: true,
 				};
 			} else {
-				// Language detected but not supported
-				return {
+				result = {
 					detectedLanguage: fallbackLanguage,
 					confidence: 0.5,
 					isSupported: false,
 				};
 			}
+
+			this.cache.set(key, result);
+			return result;
 		} catch (error) {
 			console.error("Language detection failed:", error);
-			return {
+			const result = {
 				detectedLanguage: fallbackLanguage,
 				confidence: 0,
 				isSupported: true,
 			};
+			this.cache.set(key, result);
+			return result;
 		}
 	}
 
@@ -129,5 +147,9 @@ export class LanguageDetectorService {
 		}
 
 		return samples;
+	}
+
+	getCacheSize(): number {
+		return this.cache.size();
 	}
 }
