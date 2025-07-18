@@ -167,8 +167,4 @@ describe("Position Mapping Integration Test", () => {
 		expect(firstLineProblem.to).toBe(17);
 		expect(documentContent.substring(firstLineProblem.from, firstLineProblem.to)).toBe("aauch");
 	});
-
-
-
-
 });
