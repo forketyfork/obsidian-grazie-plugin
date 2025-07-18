@@ -324,10 +324,8 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 				}
 			};
 
-			// Set up outside click handler after a short delay to avoid immediate triggering
-			setTimeout(() => {
-				window.addEventListener("click", remove);
-			}, 100);
+			// Add click handler immediately - the triggering click already has stopPropagation()
+			window.addEventListener("click", remove);
 		}
 
 		private hideDropdown(): void {

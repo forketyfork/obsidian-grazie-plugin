@@ -51,12 +51,12 @@ export default class GraziePlugin extends Plugin {
 		// Automatically check file when opened
 		this.registerEvent(
 			this.app.workspace.on("file-open", () => {
-				// Delay check until view is ready
-				window.setTimeout(() => {
-					void this.checkCurrentFile();
-				}, 50);
+				void this.checkCurrentFile();
 			})
 		);
+
+		// Check already open file on plugin load
+		void this.checkCurrentFile();
 	}
 
 	onunload() {
