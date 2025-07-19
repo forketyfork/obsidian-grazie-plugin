@@ -11,6 +11,7 @@ import { AuthenticationService } from "../jetbrains-ai/auth";
 import { GraziePluginSettings, SupportedLanguage } from "../settings/types";
 import { MarkdownTextProcessor } from "./text-processor";
 import { LanguageDetectorService, LanguageDetectionResult } from "./language-detector";
+import { LRUCache } from "./lru-cache";
 
 export interface ProblemWithSentence extends Problem {
 	sentenceIndex: number;
@@ -32,6 +33,7 @@ export class GrammarCheckerService {
 	private authService: AuthenticationService;
 	private textProcessor: MarkdownTextProcessor;
 	private languageDetector: LanguageDetectorService;
+	private sentenceCache: LRUCache<string, SentenceWithProblems>;
 
 	// Settings and auth service are provided by the main plugin class
 	constructor(
@@ -41,6 +43,7 @@ export class GrammarCheckerService {
 		this.authService = authService;
 		this.textProcessor = new MarkdownTextProcessor();
 		this.languageDetector = new LanguageDetectorService();
+		this.sentenceCache = new LRUCache<string, SentenceWithProblems>(200);
 	}
 
 	async initialize(): Promise<void> {
@@ -124,25 +127,52 @@ export class GrammarCheckerService {
 				enabledServices.push(CorrectionServiceType.SPELL);
 			}
 
-			const request = {
-				sentences,
-				language: this.mapLanguageCode(languageToUse),
-				services: enabledServices,
-			};
+			const sentencesToCheck: string[] = [];
+			const indicesToCheck: number[] = [];
+			const correctionsArray: Array<SentenceWithProblems | undefined> = new Array<SentenceWithProblems | undefined>(
+				sentences.length
+			).fill(undefined);
 
-			const response = await this.client.checkGrammar(request);
-
-			// Validate and process API response
-			let corrections: SentenceWithProblems[] = [];
-			if (response && typeof response === "object" && "corrections" in response) {
-				const responseObj = response as { corrections: unknown };
-				if (Array.isArray(responseObj.corrections)) {
-					corrections = responseObj.corrections as SentenceWithProblems[];
+			for (let i = 0; i < sentences.length; i++) {
+				const cached = this.sentenceCache.get(sentences[i]);
+				if (cached) {
+					correctionsArray[i] = cached;
+				} else {
+					sentencesToCheck.push(sentences[i]);
+					indicesToCheck.push(i);
 				}
-			} else if (Array.isArray(response)) {
-				// Some API versions return array directly
-				corrections = response;
 			}
+
+			if (sentencesToCheck.length > 0) {
+				const request = {
+					sentences: sentencesToCheck,
+					language: this.mapLanguageCode(languageToUse),
+					services: enabledServices,
+				};
+
+				const response = await this.client.checkGrammar(request);
+
+				let apiCorrections: SentenceWithProblems[] = [];
+				if (response && typeof response === "object" && "corrections" in response) {
+					const responseObj = response as { corrections: unknown };
+					if (Array.isArray(responseObj.corrections)) {
+						apiCorrections = responseObj.corrections as SentenceWithProblems[];
+					}
+				} else if (Array.isArray(response)) {
+					apiCorrections = response;
+				}
+
+				for (let j = 0; j < apiCorrections.length; j++) {
+					const idx = indicesToCheck[j];
+					const result = apiCorrections[j];
+					correctionsArray[idx] = result;
+					this.sentenceCache.set(sentences[idx], result);
+				}
+			}
+
+			const corrections: SentenceWithProblems[] = correctionsArray.filter(
+				(c): c is SentenceWithProblems => c !== undefined
+			);
 
 			const result = this.processGrammarResponse(corrections);
 

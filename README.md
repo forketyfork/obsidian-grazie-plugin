@@ -22,6 +22,7 @@ The project is usable but still under active development. Core grammar checking 
 - Hover tooltips and clickable suggestions
 - Automatic grammar check when a file is opened
 - Manual check command available from the ribbon
+- Language detection and sentence-level results are cached to reduce API usage
 
 ### Planned Features 🔄
 
