@@ -133,7 +133,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Implement cache eviction when size exceeds limit
   - Store in `LanguageDetectorService` class
   - Added sentence-level API response cache to minimize repeated requests
-- [ ] Implement CodeMirror 6 state management for decorations
+- [x] Implement CodeMirror 6 state management for decorations
   - Create `StateField` for storing grammar problems and decorations
   - Implement state transactions for adding/removing decorations
   - Use `StateEffect.define()` for decoration updates
