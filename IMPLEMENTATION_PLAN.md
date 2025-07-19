@@ -157,7 +157,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Spelling errors: blue wavy underline (`text-decoration: underline wavy blue`)
   - Mixed errors: purple wavy underline for combined issues
   - Use CSS custom properties for theme-aware colors
-- [ ] **Create interactive correction modal**
+- [x] **Create interactive correction modal**
   - Implement `Modal` class extending Obsidian's `Modal`
   - Create side-by-side layout with original and corrected text
   - Add radio buttons for suggestion selection

@@ -20,6 +20,7 @@ The project is usable but still under active development. Core grammar checking 
 - Real-time error highlighting with incremental checks
 - Status bar spinner indicates active grammar checking
 - Hover tooltips and clickable suggestions
+- Interactive correction modal with side-by-side preview
 - Automatic grammar check when a file is opened
 - Manual check command available from the ribbon
 - Language detection and sentence-level results are cached to reduce API usage
