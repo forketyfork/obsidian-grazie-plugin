@@ -171,7 +171,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
   - Add "Apply suggestion", "Ignore", and "Add to dictionary" options
   - Create batch operations for multiple errors
   - Position menu at cursor location on right-click
-- [ ] **Implement three core commands**: Check Text, Clear Suggestions, Toggle Auto-check
+- [x] **Implement three core commands**: Check Text, Clear Suggestions, Toggle Auto-check
   - Add command palette entries using `this.addCommand()`
   - "Check Text": Trigger grammar check on current document
   - "Clear Suggestions": Remove all decorations from editor
