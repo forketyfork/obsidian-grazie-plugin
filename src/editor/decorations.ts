@@ -393,8 +393,29 @@ export function mapProblemsToPositions(
 		const sentenceIndex = problemWithSentence.sentenceIndex;
 		const targetSentence = sentences[sentenceIndex];
 
-		// Find the sentence in the extracted text
-		const sentenceStartInExtracted = extractedText.indexOf(targetSentence);
+		// The target sentence has punctuation added, but the extracted text doesn't.
+		// We need to find the original sentence in the extracted text.
+		// Remove the added punctuation to match what's in extractedText
+		const originalSentence = targetSentence.replace(/[.!?]+$/, "").trim();
+
+		// Find the original sentence in the extracted text
+		let sentenceStartInExtracted = extractedText.indexOf(originalSentence);
+
+		// If we can't find it with exact match, try a more flexible approach
+		if (sentenceStartInExtracted === -1) {
+			// Split extracted text into approximate sentences and find the best match
+			const extractedSentences = extractedText.split(/[.!?]\s+|\s+(?=[A-Z])/);
+			for (let i = 0; i < extractedSentences.length; i++) {
+				const extractedSent = extractedSentences[i].trim();
+				if (
+					extractedSent &&
+					(originalSentence.includes(extractedSent) || extractedSent.includes(originalSentence.substring(0, 20)))
+				) {
+					sentenceStartInExtracted = extractedText.indexOf(extractedSent);
+					break;
+				}
+			}
+		}
 
 		if (sentenceStartInExtracted === -1) {
 			continue;
