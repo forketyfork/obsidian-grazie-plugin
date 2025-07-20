@@ -198,16 +198,17 @@ export class GrammarCheckerService {
 		}
 
 		// Split on sentence-ending punctuation followed by whitespace and capital letter
-		// This preserves the punctuation
+		// Also handle sentences that end with newlines but no punctuation
 		const sentences: string[] = [];
 		let currentSentence = "";
 
 		for (let i = 0; i < cleanedText.length; i++) {
 			const char = cleanedText[i];
-			currentSentence += char;
 
-			// Check if we're at a sentence boundary
+			// Check if we're at a sentence boundary before adding the character
 			if (/[.!?]/.test(char)) {
+				currentSentence += char;
+
 				// Look ahead for whitespace and capital letter
 				const nextChar = cleanedText[i + 1];
 				const charAfterSpace = cleanedText[i + 2];
@@ -222,6 +223,43 @@ export class GrammarCheckerService {
 					sentences.push(currentSentence.trim());
 					currentSentence = "";
 				}
+			} else if (char === " ") {
+				// Check if this space might represent a collapsed newline that should be a sentence boundary
+				const nextChar = cleanedText[i + 1];
+
+				// Look for patterns that suggest this space was originally a newline:
+				// 1. Current sentence doesn't end with punctuation AND next char is uppercase
+				// 2. Current sentence has reasonable length (not just a short phrase)
+				// 3. Be more conservative to avoid false positives
+				const trimmedSentence = currentSentence.trim();
+				const endsWithPunctuation = /[.!?]$/.test(trimmedSentence);
+				const hasReasonableLength = trimmedSentence.length > 20; // Increased threshold to be more conservative
+				const nextIsCapital = nextChar && /\p{Lu}/u.test(nextChar);
+
+				// Additional checks to avoid false positives:
+				// - Don't split if the next word looks like it could be part of the same sentence
+				// - Look ahead to see if there are common continuation words (but exclude sentence starters)
+				const nextFewChars = cleanedText.slice(i + 1, i + 10);
+				const isLikelyContinuation = /^(and|or|the|a|an|in|on|at|to|for|of|with)\s/i.test(nextFewChars);
+
+				if (
+					trimmedSentence &&
+					/\p{L}/u.test(trimmedSentence) &&
+					!endsWithPunctuation &&
+					hasReasonableLength &&
+					nextIsCapital &&
+					!isLikelyContinuation
+				) {
+					// This looks like a sentence boundary that was originally a newline
+					sentences.push(trimmedSentence);
+					currentSentence = "";
+				} else {
+					// Regular space, add to current sentence
+					currentSentence += char;
+				}
+			} else {
+				// Regular character, add to current sentence
+				currentSentence += char;
 			}
 		}
 
