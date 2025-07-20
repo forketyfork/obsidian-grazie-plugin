@@ -1,14 +1,15 @@
 // Entry point for the Obsidian Grazie plugin. The class wires together the
 // grammar checker, editor decorations and user settings.
-import { Plugin, MarkdownView, addIcon } from "obsidian";
+import { Plugin, MarkdownView, addIcon, Notice } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
 import { GrammarCheckerService } from "./services/grammar-checker";
 import { AuthenticationService } from "./jetbrains-ai/auth";
 import { EditorDecoratorService } from "./services/editor-decorator";
-import { grammarDecorationsExtension } from "./editor/decorations";
+import { grammarDecorationsExtension, grammarDecorationsField, setGrammarProblems } from "./editor/decorations";
 import { realtimeCheckExtension } from "./editor/realtime-check";
+import { CorrectionModal } from "./editor/correction-modal";
 import { GRAZIE_RIBBON_ICON, GRAZIE_STATUS_ICON } from "./icons";
 
 export default class GraziePlugin extends Plugin {
@@ -49,6 +50,39 @@ export default class GraziePlugin extends Plugin {
 		this.registerEditorExtension(realtimeCheckExtension(this));
 
 		this.addSettingTab(new GrazieSettingTab(this.app, this));
+
+		// Add commands
+		this.addCommand({
+			id: "check-text",
+			name: "Check text",
+			callback: () => {
+				void this.checkCurrentFile();
+			},
+		});
+
+		this.addCommand({
+			id: "show-corrections",
+			name: "Show corrections",
+			callback: () => {
+				this.showCorrectionModal();
+			},
+		});
+
+		this.addCommand({
+			id: "clear-suggestions",
+			name: "Clear suggestions",
+			callback: () => {
+				this.clearAllDecorations();
+			},
+		});
+
+		this.addCommand({
+			id: "toggle-auto-check",
+			name: "Toggle auto-check",
+			callback: () => {
+				this.toggleAutoCheck();
+			},
+		});
 
 		// Add ribbon icon for grammar checking
 		this.addRibbonIcon("grazie", "Check grammar", (_evt: MouseEvent) => {
@@ -192,6 +226,73 @@ export default class GraziePlugin extends Plugin {
 			console.error("Grammar check failed:", error);
 		} finally {
 			this.statusIcon?.classList.remove("grazie-plugin-spin");
+		}
+	}
+
+	showCorrectionModal() {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!activeView?.editor) {
+			new Notice("No active editor found");
+			return;
+		}
+
+		// Get the CodeMirror EditorView
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+		const editorView = (activeView.editor as any).cm;
+		if (!editorView) {
+			new Notice("Editor view not available");
+			return;
+		}
+
+		// Get current grammar problems from the editor state
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+		const decorationsState = editorView.state.field(grammarDecorationsField, false);
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		if (!decorationsState || decorationsState.problems.length === 0) {
+			new Notice("No grammar problems found. Run grammar check first.");
+			return;
+		}
+
+		// Open the correction modal
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+		const modal = new CorrectionModal(this.app, editorView, decorationsState.problems);
+		modal.open();
+	}
+
+	clearAllDecorations() {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!activeView?.editor) {
+			new Notice("No active editor found");
+			return;
+		}
+
+		// Get the CodeMirror EditorView
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+		const editorView = (activeView.editor as any).cm;
+		if (!editorView) {
+			new Notice("Editor view not available");
+			return;
+		}
+
+		// Clear all grammar problems
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+		editorView.dispatch({ effects: setGrammarProblems.of([]) });
+		new Notice("All grammar suggestions cleared");
+	}
+
+	toggleAutoCheck() {
+		this.settings.enabled = !this.settings.enabled;
+		void this.saveSettings();
+
+		const status = this.settings.enabled ? "enabled" : "disabled";
+		new Notice(`Auto-check ${status}`);
+
+		if (this.settings.enabled) {
+			// If enabling, check the current file
+			void this.checkCurrentFile();
+		} else {
+			// If disabling, clear decorations
+			this.clearAllDecorations();
 		}
 	}
 }
