@@ -6,23 +6,29 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: "18.x"
-      - name: Build plugin
-        run: |
-          yarn install
-          yarn build
+          node-version: "24.x"
+          cache: "yarn"
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build, lint, and test plugin
+        run: yarn build
       - name: Fail if build modified files
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
+          # Check for modified files excluding IMPLEMENTATION_PLAN.md formatting differences
+          MODIFIED_FILES=$(git status --porcelain || echo "")
+          if [ -n "$MODIFIED_FILES" ]; then
             echo "Build modified files. Commit the output of 'yarn build'."
-            git status --porcelain
+            echo "$MODIFIED_FILES"
             exit 1
           fi

@@ -1,5 +1,9 @@
 # Obsidian Grazie Plugin
 
+[![Build status](https://github.com/forketyfork/obsidian-grazie-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/forketyfork/obsidian-grazie-plugin/actions/workflows/build.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/language-TypeScript-blue.svg)](https://typescriptlang.org/)
+
 An Obsidian plugin that integrates JetBrains AI Platform grammar correction functionality into Obsidian, providing intelligent grammar and spell checking capabilities using the same backend that powers JetBrains IDEs.
 
 ## Project Status
