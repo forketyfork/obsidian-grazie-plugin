@@ -222,6 +222,7 @@ function applySuggestion(
 export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 	class {
 		private dropdown: HTMLElement | null = null;
+		private outsideClickListener: ((e: MouseEvent) => void) | null = null;
 
 		constructor(readonly view: EditorView) {
 			this.view.dom.addEventListener("click", this.onClick);
@@ -240,7 +241,7 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			if (!state) {
 				return;
 			}
-			const problem = state.problems.find(p => pos >= p.from && pos <= p.to);
+			const problem = state.problems.find(p => pos >= p.from && pos < p.to);
 			if (!problem) {
 				return;
 			}
@@ -259,19 +260,29 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			popup.classList.add("grazie-plugin-suggestions-popup");
 
 			if (suggestions.length === 0) {
-				// Show informative message for problems without fixes
+				// Show informative message for problems without fixes (safe DOM API)
 				const messageDiv = document.createElement("div");
 				messageDiv.classList.add("grazie-plugin-no-suggestions-message");
 
 				const problemType = problem.problem.info.category === ProblemCategory.SPELLING ? "spelling" : "grammar";
-				const title = problem.problem.info.displayName || `${problemType} issue`;
-				const message = problem.problem.message || "No suggestions available";
+				const titleText = problem.problem.info.displayName || `${problemType} issue`;
+				const messageText = problem.problem.message || "No suggestions available";
 
-				messageDiv.innerHTML = `
-					<div class="grazie-plugin-message-title">${title}</div>
-					<div class="grazie-plugin-message-text">${message}</div>
-					<div class="grazie-plugin-message-note">No automatic fixes available for this issue.</div>
-				`;
+				const titleEl = document.createElement("div");
+				titleEl.classList.add("grazie-plugin-message-title");
+				titleEl.textContent = titleText;
+
+				const textEl = document.createElement("div");
+				textEl.classList.add("grazie-plugin-message-text");
+				textEl.textContent = messageText;
+
+				const noteEl = document.createElement("div");
+				noteEl.classList.add("grazie-plugin-message-note");
+				noteEl.textContent = "No automatic fixes available for this issue.";
+
+				messageDiv.appendChild(titleEl);
+				messageDiv.appendChild(textEl);
+				messageDiv.appendChild(noteEl);
 
 				popup.appendChild(messageDiv);
 			} else {
@@ -288,7 +299,6 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 						e.stopPropagation();
 						applySuggestion(this.view, state, problem, suggestion);
 						this.hideDropdown();
-						window.removeEventListener("click", remove);
 					});
 
 					// Add keyboard support
@@ -298,10 +308,8 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 							e.stopPropagation();
 							applySuggestion(this.view, state, problem, suggestion);
 							this.hideDropdown();
-							window.removeEventListener("click", remove);
 						} else if (e.key === "Escape") {
 							this.hideDropdown();
-							window.removeEventListener("click", remove);
 						} else if (e.key === "ArrowDown") {
 							e.preventDefault();
 							const nextButton = button.nextElementSibling as HTMLButtonElement;
@@ -334,18 +342,22 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 			if (firstButton) firstButton.focus();
 
 			// Handle clicks outside the popup
-			const remove = (e: MouseEvent) => {
+			this.outsideClickListener = (e: MouseEvent) => {
 				if (e.target && !popup.contains(e.target as Node)) {
 					this.hideDropdown();
-					window.removeEventListener("click", remove);
 				}
 			};
 
 			// Add click handler immediately - the triggering click already has stopPropagation()
-			window.addEventListener("click", remove);
+			window.addEventListener("click", this.outsideClickListener);
 		}
 
 		private hideDropdown(): void {
+			// Remove outside click listener if present
+			if (this.outsideClickListener) {
+				window.removeEventListener("click", this.outsideClickListener);
+				this.outsideClickListener = null;
+			}
 			if (this.dropdown) {
 				this.dropdown.remove();
 				this.dropdown = null;
