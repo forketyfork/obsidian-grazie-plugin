@@ -57,6 +57,6 @@
 		"lodash": "^4.17.21"
 	},
 	"resolutions": {
-		"brace-expansion@^1": "1.1.12"
+		"brace-expansion@1.*": "1.1.12"
 	}
 }
