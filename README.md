@@ -27,7 +27,7 @@ The project is usable but still under active development. Core grammar checking 
 - Automatic grammar check when a file is opened
 - Manual check command available from the ribbon
 - Language detection and sentence-level results are cached to reduce API usage
- - User-facing error notices for auth/network issues (e.g., invalid/expired token)
+- User-facing error notices for auth/network issues (e.g., invalid/expired token)
 
 ### Planned Features 🔄
 
