@@ -55,5 +55,8 @@
 	"dependencies": {
 		"franc-min": "^6.2.0",
 		"lodash": "^4.17.21"
+	},
+	"resolutions": {
+		"brace-expansion": "1.1.12"
 	}
 }
