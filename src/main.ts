@@ -1,6 +1,6 @@
 // Entry point for the Obsidian Grazie plugin. The class wires together the
 // grammar checker, editor decorations and user settings.
-import { Plugin, MarkdownView, addIcon } from "obsidian";
+import { Plugin, MarkdownView, addIcon, setIcon } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
@@ -25,6 +25,7 @@ export default class GraziePlugin extends Plugin {
 
 		// Register custom Grazie icon
 		addIcon("grazie", GRAZIE_RIBBON_ICON);
+		addIcon("grazie-status", GRAZIE_STATUS_ICON);
 
 		// Create grammar checker and helper services
 		try {
@@ -40,8 +41,8 @@ export default class GraziePlugin extends Plugin {
 		this.statusBarItem = this.addStatusBarItem();
 		this.statusIcon = document.createElement("div");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
-		this.statusIcon.innerHTML = GRAZIE_STATUS_ICON;
 		this.statusIcon.title = "Grazie Plugin";
+		setIcon(this.statusIcon, "grazie-status");
 		this.statusBarItem.appendChild(this.statusIcon);
 
 		// Register CodeMirror extensions
