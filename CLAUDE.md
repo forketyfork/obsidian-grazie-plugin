@@ -20,7 +20,7 @@ This file provides guidance to AI agents when working with code in this reposito
 
 ## General guidelines
 
-- IMPORTANT: After finishing your task, make sure to run `yarn build` and fix any introduced issues.
+- IMPORTANT: After finishing your task, run `yarn build`, fix any introduced issues and commit the formatting changes.
 - IMPORTANT: On finishing your task, make sure the README.md file is up to date with regards to the new features, usage, and development.
 - IMPORTANT: Always try to extract testable logic that can be independent of Obsidian plugins to separate classes or functions and write unit tests for it.
 - IMPORTANT: Do not write useless tests just to increase coverage, make them actually useful for catching issues in the code.
