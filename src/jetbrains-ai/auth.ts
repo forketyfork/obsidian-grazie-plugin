@@ -1,5 +1,6 @@
 import { Plugin } from "obsidian";
 import { GraziePluginSettings } from "../settings/types";
+import { BehaviorSubject, distinctUntilChanged, Observable } from "rxjs";
 
 export interface AuthTokenManager {
 	getToken(): string | null;
@@ -90,9 +91,13 @@ export class ObsidianAuthTokenManager implements AuthTokenManager {
 
 export class AuthenticationService {
 	private tokenManager: AuthTokenManager;
+	private tokenSubject: BehaviorSubject<string | null>;
+	public readonly token$: Observable<string | null>;
 
 	constructor(tokenManager: AuthTokenManager) {
 		this.tokenManager = tokenManager;
+		this.tokenSubject = new BehaviorSubject<string | null>(this.tokenManager.getToken());
+		this.token$ = this.tokenSubject.asObservable().pipe(distinctUntilChanged());
 	}
 
 	getAuthenticatedToken(): string {
@@ -109,10 +114,12 @@ export class AuthenticationService {
 
 	async setToken(token: string): Promise<void> {
 		await this.tokenManager.setToken(token);
+		this.tokenSubject.next(this.tokenManager.getToken());
 	}
 
 	async clearToken(): Promise<void> {
 		await this.tokenManager.clearToken();
+		this.tokenSubject.next(this.tokenManager.getToken());
 	}
 
 	isAuthenticated(): boolean {

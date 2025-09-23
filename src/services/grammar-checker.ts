@@ -34,6 +34,7 @@ export class GrammarCheckerService {
 	private textProcessor: MarkdownTextProcessor;
 	private languageDetector: LanguageDetectorService;
 	private sentenceCache: LRUCache<string, SentenceWithProblems>;
+	private tokenSubscription: { unsubscribe: () => void } | null = null;
 
 	// Settings and auth service are provided by the main plugin class
 	constructor(
@@ -51,6 +52,24 @@ export class GrammarCheckerService {
 			const token = this.authService.getAuthenticatedToken();
 			this.client = JetBrainsAIClient.createWithUserToken(token);
 			await this.client.initialize();
+
+			// React to token changes immediately, if observable is available
+			const maybeToken$ = (
+				this.authService as unknown as {
+					token$?: { subscribe: (fn: (v: string | null) => void) => { unsubscribe: () => void } };
+				}
+			).token$;
+			if (maybeToken$ && typeof maybeToken$.subscribe === "function") {
+				this.tokenSubscription = maybeToken$.subscribe(nextToken => {
+					if (!this.client) return;
+					if (nextToken && nextToken.trim().length > 0) {
+						this.client.setToken(nextToken);
+					} else {
+						// Clear token to avoid sending stale credentials
+						this.client.setToken("");
+					}
+				});
+			}
 		} catch (error) {
 			console.error("Failed to initialize grammar checker:", error);
 			throw error;
@@ -302,5 +321,9 @@ export class GrammarCheckerService {
 
 	dispose(): void {
 		this.client = null;
+		if (this.tokenSubscription) {
+			this.tokenSubscription.unsubscribe();
+			this.tokenSubscription = null;
+		}
 	}
 }

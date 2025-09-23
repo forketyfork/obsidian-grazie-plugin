@@ -95,6 +95,12 @@ export default class GraziePlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	// Public helper to apply token immediately without requiring plugin reload
+	async applyAuthToken(token: string): Promise<void> {
+		if (!this.authService) return;
+		await this.authService.setToken(token);
+	}
+
 	async checkCurrentFile() {
 		const activeFile = this.app.workspace.getActiveFile();
 
