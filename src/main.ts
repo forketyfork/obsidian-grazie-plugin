@@ -1,6 +1,6 @@
 // Entry point for the Obsidian Grazie plugin. The class wires together the
 // grammar checker, editor decorations and user settings.
-import { Plugin, MarkdownView, addIcon } from "obsidian";
+import { Plugin, MarkdownView, addIcon, Notice } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
@@ -18,6 +18,8 @@ export default class GraziePlugin extends Plugin {
 	private editorDecorator: EditorDecoratorService | null = null;
 	private statusBarItem: HTMLElement | null = null;
 	private statusIcon: HTMLElement | null = null;
+	private lastErrorNoticeAt: number | null = null;
+	private lastErrorNoticeKey: string | null = null;
 
 	async onload() {
 		// Read settings and prepare services before attaching any editor extensions
@@ -145,6 +147,7 @@ export default class GraziePlugin extends Plugin {
 			// Display results (status icon only)
 		} catch (error) {
 			console.error("Grammar check failed:", error);
+			this.showErrorNotice(error);
 		} finally {
 			this.statusIcon?.classList.remove("grazie-plugin-spin");
 		}
@@ -190,8 +193,43 @@ export default class GraziePlugin extends Plugin {
 			this.editorDecorator.applyPartialGrammarResults(view, activeFile, from, text, result);
 		} catch (error) {
 			console.error("Grammar check failed:", error);
+			this.showErrorNotice(error);
 		} finally {
 			this.statusIcon?.classList.remove("grazie-plugin-spin");
 		}
+	}
+
+	private showErrorNotice(error: unknown): void {
+		let message = "Grazie: An error occurred while checking grammar.";
+		const raw = error instanceof Error ? error.message : String(error);
+
+		// Map common backend/auth issues to friendly messages
+		if (raw.includes("No authentication token configured")) {
+			message = "Grazie: No token configured. Set JETBRAINS_AI_TOKEN or add a token in settings.";
+		} else if (raw.includes("Authentication failed") || raw.includes("401")) {
+			message = "Grazie: Authentication failed. Please check your token.";
+		} else if (raw.includes("Access forbidden") || raw.includes("403")) {
+			message = "Grazie: Access forbidden. Please check your permissions.";
+		} else if (raw.includes("Rate limit exceeded") || raw.includes("429")) {
+			message = "Grazie: Rate limit exceeded. Please try again later.";
+		} else if (raw.includes("Expected JSON response")) {
+			message = "Grazie: Unexpected server response. Please try again later.";
+		} else if (raw.includes("HTTP ")) {
+			message = "Grazie: Server error. Please try again later.";
+		} else if (raw.includes("API request failed")) {
+			// Keep API failure reason but prefix with Grazie
+			message = `Grazie: ${raw}`;
+		}
+
+		// De-duplicate frequent notices within 10 seconds for the same message
+		const now = Date.now();
+		const key = message;
+		if (this.lastErrorNoticeKey === key && this.lastErrorNoticeAt !== null && now - this.lastErrorNoticeAt < 10000) {
+			return;
+		}
+
+		this.lastErrorNoticeKey = key;
+		this.lastErrorNoticeAt = now;
+		new Notice(message, 8000);
 	}
 }

@@ -27,6 +27,7 @@ The project is usable but still under active development. Core grammar checking 
 - Automatic grammar check when a file is opened
 - Manual check command available from the ribbon
 - Language detection and sentence-level results are cached to reduce API usage
+ - User-facing error notices for auth/network issues (e.g., invalid/expired token)
 
 ### Planned Features 🔄
 
@@ -49,6 +50,16 @@ The Obsidian Grazie Plugin will bring advanced grammar and spell checking to Obs
 
 - Obsidian v0.15.0 or higher
 - JetBrains AI Platform authentication token (set the `JETBRAINS_AI_TOKEN` environment variable or configure it in the plugin settings)
+
+### Error notices
+
+If there is an issue communicating with the backend (for example, an invalid or expired token, lack of permissions, rate limits, or server errors), the plugin shows a temporary notice in the bottom-right corner of Obsidian. Typical messages include:
+
+- "Grazie: Authentication failed. Please check your token."
+- "Grazie: Access forbidden. Please check your permissions."
+- "Grazie: Rate limit exceeded. Please try again later."
+
+To resolve most authentication issues, ensure `JETBRAINS_AI_TOKEN` is set or configure a token in the plugin settings.
 
 ## Development
 
