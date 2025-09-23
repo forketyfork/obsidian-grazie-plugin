@@ -28,6 +28,8 @@ export class GrazieSettingTab extends PluginSettingTab {
 					.onChange(async value => {
 						this.plugin.settings.authToken = value;
 						await this.plugin.saveSettings();
+						// Apply immediately to running services
+						await this.plugin.applyAuthToken(value);
 					})
 					.inputEl.setAttribute("type", "password")
 			);

@@ -103,6 +103,10 @@ export class JetBrainsAIClient {
 		this.configResolver = configResolver ?? ConfigurationUrlResolver.createDefault();
 	}
 
+	public setToken(token: string): void {
+		this.authConfig.token = token;
+	}
+
 	async initialize(): Promise<void> {
 		const resolutionResult = await this.configResolver.resolve();
 		this.baseUrl = resolutionResult.url;
