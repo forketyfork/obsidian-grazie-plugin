@@ -50,7 +50,7 @@ The Obsidian Grazie Plugin will bring advanced grammar and spell checking to Obs
 
 - Obsidian v0.15.0 or higher
 - JetBrains AI Platform authentication token (set the `JETBRAINS_AI_TOKEN` environment variable or configure it in the plugin settings)
- - JetBrains AI Platform authentication token (set the `JETBRAINS_AI_TOKEN` environment variable or configure it in the plugin settings). Changes to the token in settings are applied immediately, no plugin reload required.
+- JetBrains AI Platform authentication token (set the `JETBRAINS_AI_TOKEN` environment variable or configure it in the plugin settings). Changes to the token in settings are applied immediately, no plugin reload required.
 
 ### Error notices
 
