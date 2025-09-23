@@ -1,0 +1,66 @@
+name: Debug Prettier Formatting
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  debug-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+          cache: "yarn"
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Copy original IMPLEMENTATION_PLAN.md
+        run: cp IMPLEMENTATION_PLAN.md IMPLEMENTATION_PLAN.md.original
+      - name: Run prettier
+        run: yarn prettier --write IMPLEMENTATION_PLAN.md
+      - name: Show differences
+        run: |
+          echo "=== Git status after prettier ==="
+          git status --porcelain
+          echo "=== Diff output ==="
+          git diff IMPLEMENTATION_PLAN.md || echo "No differences found"
+      - name: Upload original and formatted files
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-formatting-comparison
+          path: |
+            IMPLEMENTATION_PLAN.md.original
+            IMPLEMENTATION_PLAN.md
+          retention-days: 1
+      - name: Test with Node.js 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24.x"
+          cache: "yarn"
+      - name: Restore original file
+        run: cp IMPLEMENTATION_PLAN.md.original IMPLEMENTATION_PLAN.md
+      - name: Run prettier with Node.js 24
+        run: yarn prettier --write IMPLEMENTATION_PLAN.md
+      - name: Copy Node 24 result
+        run: cp IMPLEMENTATION_PLAN.md IMPLEMENTATION_PLAN.md.node24
+      - name: Show Node.js 24 differences
+        run: |
+          echo "=== Git status after prettier with Node.js 24 ==="
+          git status --porcelain
+          echo "=== Diff between Node 18 and 24 results ==="
+          diff IMPLEMENTATION_PLAN.md.original IMPLEMENTATION_PLAN.md.node24 || echo "Files differ"
+      - name: Upload Node.js 24 formatted file
+        uses: actions/upload-artifact@v4
+        with:
+          name: prettier-node24-comparison
+          path: |
+            IMPLEMENTATION_PLAN.md.original
+            IMPLEMENTATION_PLAN.md.node24
+          retention-days: 1
