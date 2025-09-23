@@ -1,5 +1,12 @@
 export const requestUrl = jest.fn();
 
+export class Notice {
+	constructor(
+		public message: string,
+		public timeout?: number
+	) {}
+}
+
 export const Plugin = class MockPlugin {
 	app: unknown;
 	settings: unknown;
