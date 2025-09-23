@@ -26,13 +26,9 @@ jobs:
       - name: Fail if build modified files
         run: |
           # Check for modified files excluding IMPLEMENTATION_PLAN.md formatting differences
-          MODIFIED_FILES=$(git status --porcelain | grep -v "IMPLEMENTATION_PLAN.md" || echo "")
+          MODIFIED_FILES=$(git status --porcelain || echo "")
           if [ -n "$MODIFIED_FILES" ]; then
-            echo "Build modified files (excluding IMPLEMENTATION_PLAN.md). Commit the output of 'yarn build'."
+            echo "Build modified files. Commit the output of 'yarn build'."
             echo "$MODIFIED_FILES"
             exit 1
-          fi
-          # Show IMPLEMENTATION_PLAN.md status for informational purposes
-          if git status --porcelain | grep -q "IMPLEMENTATION_PLAN.md"; then
-            echo "IMPLEMENTATION_PLAN.md has formatting differences between environments (this is expected and ignored)"
           fi
