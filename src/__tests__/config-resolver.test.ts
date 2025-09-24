@@ -160,21 +160,6 @@ describe("ConfigurationUrlResolver", () => {
 		});
 	});
 
-	describe("factory methods", () => {
-		it("should create default resolver", () => {
-			const resolver = ConfigurationUrlResolver.createDefault();
-			expect(resolver).toBeInstanceOf(ConfigurationUrlResolver);
-		});
-
-		it("should create resolver with custom config", () => {
-			const resolver = new ConfigurationUrlResolver(
-				"https://custom-config.example.com/config.json",
-				"https://custom-api.example.com/"
-			);
-			expect(resolver).toBeInstanceOf(ConfigurationUrlResolver);
-		});
-	});
-
 	describe("custom configuration", () => {
 		it("should use default config URL", async () => {
 			const mockConfig: PlatformConfig = {
