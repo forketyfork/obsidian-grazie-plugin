@@ -136,7 +136,7 @@ function scheduleCheck(view: EditorView, plugin: GraziePlugin): void {
 					void plugin.checkRange(view, st.from, st.to);
 					view.dispatch({ effects: setRange.of(null) });
 				} else {
-					void plugin.checkCurrentFile();
+					void plugin.checkCurrentFile({ trigger: "auto" });
 				}
 			}
 		} catch (error) {

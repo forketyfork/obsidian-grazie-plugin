@@ -153,3 +153,137 @@
 		opacity: 1;
 	}
 }
+
+/* Correction modal */
+.grazie-plugin-correction-modal {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-height: 75vh;
+	overflow: hidden;
+}
+
+.grazie-plugin-correction-header {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.grazie-plugin-correction-header h2 {
+	margin: 0;
+	font-size: 1.25em;
+	font-weight: 600;
+}
+
+.grazie-plugin-correction-summary {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
+.grazie-plugin-correction-panes {
+	display: flex;
+	gap: 8px;
+	height: 220px;
+}
+
+.grazie-plugin-original-pane,
+.grazie-plugin-preview-pane {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.grazie-plugin-original-text,
+.grazie-plugin-preview-text {
+	width: 100%;
+	height: 100%;
+	resize: none;
+}
+
+.grazie-plugin-problems-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	overflow-y: auto;
+	padding-right: 4px;
+}
+
+.grazie-plugin-problem-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px;
+	background: var(--background-secondary);
+}
+
+.grazie-plugin-problem-heading {
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.grazie-plugin-problem-context {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	background: var(--background-primary);
+	border-radius: 4px;
+	padding: 6px;
+	word-break: break-word;
+}
+
+.grazie-plugin-problem-options {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.grazie-plugin-problem-option {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	font-size: 0.95em;
+	cursor: pointer;
+}
+
+.grazie-plugin-problem-option input[type="radio"] {
+	margin-top: 4px;
+}
+
+.grazie-plugin-problem-option-text {
+	flex: 1;
+	word-break: break-word;
+}
+
+.grazie-plugin-correction-empty {
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 12px;
+}
+
+.grazie-plugin-modal-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.grazie-plugin-modal-buttons button {
+	padding: 6px 12px;
+}
+
+.grazie-plugin-primary-button {
+	background: var(--interactive-accent);
+	border: none;
+	color: var(--text-on-accent);
+	transition: filter 0.2s ease;
+}
+
+.grazie-plugin-primary-button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.grazie-plugin-primary-button:not(:disabled):hover {
+	filter: brightness(1.1);
+}

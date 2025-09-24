@@ -1,15 +1,22 @@
 // Entry point for the Obsidian Grazie plugin. The class wires together the
 // grammar checker, editor decorations and user settings.
-import { Plugin, MarkdownView, addIcon } from "obsidian";
+import { Plugin, MarkdownView, addIcon, Notice } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { GrazieSettingTab } from "./settings";
 import { GraziePluginSettings, DEFAULT_SETTINGS } from "./settings/types";
 import { GrammarCheckerService } from "./services/grammar-checker";
 import { AuthenticationService } from "./jetbrains-ai/auth";
 import { EditorDecoratorService } from "./services/editor-decorator";
-import { grammarDecorationsExtension } from "./editor/decorations";
+import { grammarDecorationsExtension, GrammarProblemWithPosition } from "./editor/decorations";
 import { realtimeCheckExtension } from "./editor/realtime-check";
 import { GRAZIE_RIBBON_ICON, GRAZIE_STATUS_ICON } from "./icons";
+import { CorrectionModal, problemHasSuggestions } from "./editor/correction-modal";
+
+type CheckTrigger = "auto" | "manual";
+
+interface CheckFileOptions {
+	trigger: CheckTrigger;
+}
 
 export default class GraziePlugin extends Plugin {
 	settings: GraziePluginSettings;
@@ -52,18 +59,18 @@ export default class GraziePlugin extends Plugin {
 
 		// Add ribbon icon for grammar checking
 		this.addRibbonIcon("grazie", "Check grammar", (_evt: MouseEvent) => {
-			void this.checkCurrentFile();
+			void this.checkCurrentFile({ trigger: "manual" });
 		});
 
 		// Automatically check file when opened
 		this.registerEvent(
 			this.app.workspace.on("file-open", () => {
-				void this.checkCurrentFile();
+				void this.checkCurrentFile({ trigger: "auto" });
 			})
 		);
 
 		// Check already open file on plugin load
-		void this.checkCurrentFile();
+		void this.checkCurrentFile({ trigger: "auto" });
 	}
 
 	onunload() {
@@ -92,7 +99,7 @@ export default class GraziePlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	async checkCurrentFile() {
+	async checkCurrentFile(options: CheckFileOptions = { trigger: "auto" }) {
 		const activeFile = this.app.workspace.getActiveFile();
 
 		if (!activeFile) {
@@ -134,14 +141,15 @@ export default class GraziePlugin extends Plugin {
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (activeView?.editor) {
 				// Get the CodeMirror EditorView
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-				const editorView = (activeView.editor as any).cm;
+				const editor = activeView.editor as unknown;
+				const editorView = (editor as { cm?: EditorView }).cm;
 				if (editorView) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-					await this.editorDecorator.applyGrammarResults(editorView, activeFile, result);
+					const problems = await this.editorDecorator.applyGrammarResults(editorView, activeFile, result);
+					if (options.trigger === "manual") {
+						this.openCorrectionModal(editorView, problems);
+					}
 				}
 			}
-
 			// Display results (status icon only)
 		} catch (error) {
 			console.error("Grammar check failed:", error);
@@ -193,5 +201,15 @@ export default class GraziePlugin extends Plugin {
 		} finally {
 			this.statusIcon?.classList.remove("grazie-plugin-spin");
 		}
+	}
+
+	private openCorrectionModal(view: EditorView, problems: GrammarProblemWithPosition[]): void {
+		const actionableProblems = problems.filter(problemHasSuggestions);
+		if (actionableProblems.length === 0) {
+			new Notice("No suggestions available to review.");
+			return;
+		}
+
+		new CorrectionModal(this.app, view, actionableProblems).open();
 	}
 }

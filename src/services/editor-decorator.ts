@@ -19,11 +19,15 @@ export class EditorDecoratorService {
 	/**
 	 * Apply grammar checking results to an editor view
 	 */
-	async applyGrammarResults(view: EditorView, file: TFile, result: GrammarCheckResult): Promise<void> {
+	async applyGrammarResults(
+		view: EditorView,
+		file: TFile,
+		result: GrammarCheckResult
+	): Promise<GrammarProblemWithPosition[]> {
 		if (!result.hasErrors) {
 			// Clear existing decorations
 			this.clearDecorations(view);
-			return;
+			return [];
 		}
 
 		try {
@@ -45,8 +49,11 @@ export class EditorDecoratorService {
 
 			// Apply decorations
 			this.setDecorations(view, validProblems);
+
+			return validProblems;
 		} catch (error) {
 			console.error("Failed to apply grammar decorations:", error);
+			return [];
 		}
 	}
 
