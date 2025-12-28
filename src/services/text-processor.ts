@@ -171,7 +171,8 @@ export class MarkdownTextProcessor {
 		const frontmatterRegex = /^---[\s\S]*?^---/m;
 		const match = frontmatterRegex.exec(text);
 
-		if (match && match.index === 0) {
+		// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+		if (match != null && match.index === 0) {
 			exclusions.push({
 				start: match.index,
 				end: match.index + match[0].length,
