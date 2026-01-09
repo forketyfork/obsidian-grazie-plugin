@@ -270,7 +270,7 @@ The plugin will integrate directly with the **JetBrains AI Platform** using HTTP
 ### Phase 5: Testing & Polish
 
 - [ ] Create **tests** directory structure
-- [ ] Write unit tests for JetBrains AI Platform client
+- [x] Write unit tests for JetBrains AI Platform client
 - [ ] Write unit tests for grammar checker service
 - [ ] Write unit tests for text processing
 - [ ] Write integration tests with Obsidian
