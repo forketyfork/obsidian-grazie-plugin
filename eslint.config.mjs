@@ -45,8 +45,8 @@ export default [
 			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
 
-			// Console restrictions relaxed for debugging
-			"no-console": "off",
+			// Console restrictions per CLAUDE.md
+			"no-console": ["error", { allow: ["error"] }],
 
 			// Promise handling
 			"@typescript-eslint/no-floating-promises": "error",
