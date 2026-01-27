@@ -113,6 +113,12 @@ and publish a new tag:
 yarn release
 ```
 
+## My other plugins
+
+- [Food Tracker](https://github.com/forketyfork/obsidian-food-tracker): Track calories, macros, and nutrition totals with database and inline entries.
+- [YouTrack Fetcher](https://github.com/forketyfork/obsidian-youtrack-fetcher): Fetch YouTrack issues into structured notes with templates.
+- [Speech Bubbles](https://github.com/forketyfork/obsidian-speech-bubbles): Render transcript notes as chat-style speech bubbles.
+
 ## License
 
 This plugin is licensed under the MIT License.
