@@ -2,6 +2,7 @@ import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import globals from "globals";
 import js from "@eslint/js";
+import obsidianmd from "eslint-plugin-obsidianmd";
 
 export default [
 	// Global ignores
@@ -37,6 +38,7 @@ export default [
 		},
 		plugins: {
 			"@typescript-eslint": typescriptEslint,
+			obsidianmd: obsidianmd,
 		},
 		rules: {
 			...typescriptEslint.configs.recommended.rules,
@@ -61,6 +63,12 @@ export default [
 			"@typescript-eslint/prefer-nullish-coalescing": "error",
 			"@typescript-eslint/prefer-optional-chain": "error",
 			"@typescript-eslint/no-unnecessary-type-assertion": "error",
+
+			// Obsidian plugin submission rules
+			"obsidianmd/settings-tab/no-manual-html-headings": "error",
+			"obsidianmd/ui/sentence-case": "error",
+			"obsidianmd/no-sample-code": "error",
+			"obsidianmd/sample-names": "error",
 		},
 	},
 

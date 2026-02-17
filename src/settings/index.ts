@@ -16,11 +16,11 @@ export class GrazieSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h3", { text: "Authentication" });
+		new Setting(containerEl).setName("Authentication").setHeading();
 
 		new Setting(containerEl)
 			.setName("JetBrains AI token")
-			.setDesc("Authentication token for JetBrains AI Platform")
+			.setDesc("Authentication token for JetBrains AI Platform") // eslint-disable-line obsidianmd/ui/sentence-case -- proper noun
 			.addText(text =>
 				text
 					.setPlaceholder("Enter your JetBrains AI token")
@@ -34,7 +34,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 					.inputEl.setAttribute("type", "password")
 			);
 
-		containerEl.createEl("h3", { text: "Server configuration" });
+		new Setting(containerEl).setName("Server configuration").setHeading();
 
 		new Setting(containerEl)
 			.setName("Configuration URL")
@@ -96,7 +96,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 					});
 			});
 
-		containerEl.createEl("h3", { text: "Language settings" });
+		new Setting(containerEl).setName("Language settings").setHeading();
 
 		new Setting(containerEl)
 			.setName("Auto-detect language")
@@ -121,10 +121,10 @@ export class GrazieSettingTab extends PluginSettingTab {
 				});
 			});
 
-		containerEl.createEl("h3", { text: "Service settings" });
+		new Setting(containerEl).setName("Service settings").setHeading();
 
 		new Setting(containerEl)
-			.setName("Enable MLEC service")
+			.setName("Enable MLEC service") // eslint-disable-line obsidianmd/ui/sentence-case -- abbreviation
 			.setDesc("Machine learning error correction service")
 			.addToggle(toggle =>
 				toggle.setValue(this.plugin.settings.enabledServices.mlec).onChange(async value => {
@@ -153,7 +153,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 				})
 			);
 
-		containerEl.createEl("h3", { text: "Checking settings" });
+		new Setting(containerEl).setName("Checking settings").setHeading();
 
 		new Setting(containerEl)
 			.setName("Checking delay")
@@ -187,7 +187,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 					})
 			);
 
-		containerEl.createEl("h3", { text: "Exclusions" });
+		new Setting(containerEl).setName("Exclusions").setHeading();
 
 		new Setting(containerEl)
 			.setName("Exclude code blocks")

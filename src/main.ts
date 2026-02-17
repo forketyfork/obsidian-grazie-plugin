@@ -43,7 +43,7 @@ export default class GraziePlugin extends Plugin {
 		this.statusBarItem = this.addStatusBarItem();
 		this.statusIcon = document.createElement("div");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
-		this.statusIcon.title = "Grazie Plugin";
+		this.statusIcon.title = "Grazie plugin";
 		setIcon(this.statusIcon, "grazie-status");
 		this.statusBarItem.appendChild(this.statusIcon);
 
