@@ -12,7 +12,7 @@ import { realtimeCheckExtension } from "./editor/realtime-check";
 import { GRAZIE_RIBBON_ICON, GRAZIE_STATUS_ICON } from "./icons";
 
 export default class GraziePlugin extends Plugin {
-	settings: GraziePluginSettings;
+	settings!: GraziePluginSettings;
 	private grammarChecker: GrammarCheckerService | null = null;
 	private authService: AuthenticationService | null = null;
 	private editorDecorator: EditorDecoratorService | null = null;
