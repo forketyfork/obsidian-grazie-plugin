@@ -15,7 +15,7 @@ export class LRUCache<K, V> {
 		if (this.map.has(key)) {
 			this.map.delete(key);
 		} else if (this.map.size >= this.limit) {
-			const oldestKey = this.map.keys().next().value as K | undefined;
+			const oldestKey = this.map.keys().next().value;
 			if (oldestKey !== undefined) {
 				this.map.delete(oldestKey);
 			}
