@@ -147,6 +147,16 @@ export class JetBrainsAIClient {
 		return `${baseUrl}/${authType}${path}`;
 	}
 
+	private getHeaderValue(headers: Record<string, string>, name: string): string {
+		const directValue = headers[name];
+		if (typeof directValue === "string") {
+			return directValue;
+		}
+
+		const match = Object.entries(headers).find(([key]) => key.toLowerCase() === name.toLowerCase());
+		return typeof match?.[1] === "string" ? match[1] : "";
+	}
+
 	private async makeRequest(url: string, body: unknown): Promise<unknown> {
 		const requestBody = JSON.stringify(body);
 
@@ -183,8 +193,8 @@ export class JetBrainsAIClient {
 				throw new Error(`HTTP ${response.status}: Request failed`);
 			}
 
-			// Validate content type
-			const contentType = response.headers["content-type"] || "";
+			// Validate content type (header names can vary by casing across environments)
+			const contentType = this.getHeaderValue(response.headers, "content-type");
 			if (!contentType.includes("application/json")) {
 				console.error(`Invalid content type: ${contentType}`);
 				throw new Error(`Expected JSON response, got ${contentType}`);
