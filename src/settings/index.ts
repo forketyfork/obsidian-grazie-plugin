@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import GraziePlugin from "../main";
-import { SUPPORTED_LANGUAGES, SupportedLanguage } from "./types";
+import { SUPPORTED_LANGUAGES } from "./types";
 import { ConfigurationUrlResolver } from "../jetbrains-ai/config-resolver";
 
 export class GrazieSettingTab extends PluginSettingTab {
@@ -116,7 +116,7 @@ export class GrazieSettingTab extends PluginSettingTab {
 					dropdown.addOption(code, name);
 				});
 				dropdown.setValue(this.plugin.settings.language).onChange(async value => {
-					this.plugin.settings.language = value as SupportedLanguage;
+					this.plugin.settings.language = value;
 					await this.plugin.saveSettings();
 				});
 			});
