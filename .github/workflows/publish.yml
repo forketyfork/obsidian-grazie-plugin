@@ -9,29 +9,36 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24.x"
+          cache: "pnpm"
       - name: Build plugin
         run: |
-          yarn install --immutable
-          yarn build
+          pnpm install --frozen-lockfile
+          pnpm build
       - name: Fail if build modified files
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Build modified files. Commit the output of 'yarn build'."
+            echo "Build modified files. Commit the output of 'pnpm build'."
             git status --porcelain
             exit 1
           fi
-      - name: Create plugin archives
-        run: |
-          mkdir -p obsidian-grazie-plugin
-          cp main.js manifest.json styles.css obsidian-grazie-plugin/
-          zip -r obsidian-grazie-plugin.zip obsidian-grazie-plugin/
-          tar -czf obsidian-grazie-plugin.tar.gz obsidian-grazie-plugin/
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,4 +48,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            main.js manifest.json styles.css obsidian-grazie-plugin.zip obsidian-grazie-plugin.tar.gz
+            main.js manifest.json styles.css
