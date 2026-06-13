@@ -114,6 +114,31 @@ describe("JetBrainsAIClient", () => {
 			});
 		});
 
+		it("should accept JSON content-type header regardless of header casing", async () => {
+			mockConfigResolver.resolve.mockResolvedValue({
+				url: "https://api.jetbrains.ai/",
+				isSuccess: true,
+				isFallback: false,
+				warnings: [],
+				errors: [],
+			});
+
+			mockRequestUrl.mockResolvedValue({
+				status: 200,
+				headers: { "Content-Type": "application/json; charset=utf-8" },
+				json: [],
+			});
+
+			const client = new JetBrainsAIClient({ token: "test-token", userAuth: true }, mockConfigResolver);
+
+			await expect(
+				client.checkGrammar({
+					sentences: ["This is a test sentence."],
+					language: "ENGLISH",
+				})
+			).resolves.toEqual([]);
+		});
+
 		it("should handle authentication error", async () => {
 			mockConfigResolver.resolve.mockResolvedValue({
 				url: "https://api.jetbrains.ai/",
