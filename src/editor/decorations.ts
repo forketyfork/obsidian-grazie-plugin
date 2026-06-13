@@ -325,14 +325,13 @@ export const grammarDecorationsPlugin = ViewPlugin.fromClass(
 				});
 			}
 
-			// Position the popup
+			// Position the popup using CSS custom properties
 			const coords = this.view.coordsAtPos(problem.from);
 			if (!coords) {
 				return;
 			}
-			popup.style.position = "absolute";
-			popup.style.left = `${coords.left}px`;
-			popup.style.top = `${coords.bottom + 2}px`;
+			popup.style.setProperty("--grazie-plugin-popup-left", `${coords.left}px`);
+			popup.style.setProperty("--grazie-plugin-popup-top", `${coords.bottom + 2}px`);
 
 			document.body.appendChild(popup);
 			this.dropdown = popup;

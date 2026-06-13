@@ -132,7 +132,8 @@ function scheduleCheck(view: EditorView, plugin: GraziePlugin): void {
 			const cm = (activeView?.editor as any)?.cm;
 			if (cm === view) {
 				const st = view.state.field(realtimeStateField, false);
-				if (st && st.from !== null && st.to !== null) {
+				// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+				if (st != null && st.from !== null && st.to !== null) {
 					void plugin.checkRange(view, st.from, st.to);
 					view.dispatch({ effects: setRange.of(null) });
 				} else {

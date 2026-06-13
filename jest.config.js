@@ -6,11 +6,16 @@ const tsJestTransformCfg = createDefaultPreset().transform;
 module.exports = {
 	testEnvironment: "jsdom",
 	transform: {
-		...tsJestTransformCfg,
+		...Object.fromEntries(
+			Object.entries(tsJestTransformCfg).map(([pattern, transformer]) => [
+				pattern,
+				[transformer[0], { ...transformer[1], tsconfig: "tsconfig.test.json" }],
+			])
+		),
 	},
 	coverageProvider: "v8",
 	coverageDirectory: "coverage",
-	collectCoverageFrom: ["src/**/*.ts", "!src/**/*.test.ts", "!src/__tests__/**", "!node_modules/**"],
+	collectCoverageFrom: ["**/*.ts", "!**/*.test.ts", "!**/__tests__/**", "!node_modules/**"],
 	moduleNameMapper: {
 		"^obsidian$": "<rootDir>/__mocks__/obsidian.ts",
 		"^franc-min$": "<rootDir>/__mocks__/franc-min.ts",

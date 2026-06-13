@@ -12,7 +12,7 @@ import { realtimeCheckExtension } from "./editor/realtime-check";
 import { GRAZIE_RIBBON_ICON, GRAZIE_STATUS_ICON } from "./icons";
 
 export default class GraziePlugin extends Plugin {
-	settings: GraziePluginSettings;
+	settings!: GraziePluginSettings;
 	private grammarChecker: GrammarCheckerService | null = null;
 	private authService: AuthenticationService | null = null;
 	private editorDecorator: EditorDecoratorService | null = null;
@@ -43,7 +43,7 @@ export default class GraziePlugin extends Plugin {
 		this.statusBarItem = this.addStatusBarItem();
 		this.statusIcon = document.createElement("div");
 		this.statusIcon.classList.add("grazie-plugin-status-icon");
-		this.statusIcon.title = "Grazie Plugin";
+		this.statusIcon.title = "Grazie plugin";
 		setIcon(this.statusIcon, "grazie-status");
 		this.statusBarItem.appendChild(this.statusIcon);
 

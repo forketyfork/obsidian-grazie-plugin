@@ -25,5 +25,12 @@ data.json
 # Code coverage dir
 coverage/
 
-# Temporary files
-.ignore
+# direnv
+.direnv
+
+# zenflow
+.zenflow
+
+.ignore/
+.tmp/
+.architect/

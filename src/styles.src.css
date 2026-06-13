@@ -58,6 +58,9 @@
 }
 
 .grazie-plugin-suggestions-popup {
+	position: absolute;
+	left: var(--grazie-plugin-popup-left);
+	top: var(--grazie-plugin-popup-top);
 	font-size: 0.9em;
 	z-index: 1000;
 	min-width: 200px;

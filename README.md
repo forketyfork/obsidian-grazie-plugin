@@ -67,51 +67,57 @@ To resolve most authentication issues, ensure `JETBRAINS_AI_TOKEN` is set or con
 Run the development build with change watch:
 
 ```shell
-yarn dev:watch
+pnpm dev:watch
 ```
 
 Run the TypeScript type check:
 
 ```shell
-yarn typecheck
+pnpm typecheck
 ```
 
 Run the linter:
 
 ```shell
-yarn lint
+pnpm lint
 ```
 
 Run the tests:
 
 ```shell
-yarn test
+pnpm test
 ```
 
 Run the tests in watch mode:
 
 ```shell
-yarn test:watch
+pnpm test:watch
 ```
 
 Generate a coverage report:
 
 ```shell
-yarn coverage
+pnpm coverage
 ```
 
 Run the production build (includes tests, type checking, and formatting):
 
 ```shell
-yarn build
+pnpm build
 ```
 
 Bump the version in `package.json` and `manifest.json`, push the `main` branch,
 and publish a new tag:
 
 ```shell
-yarn release
+pnpm release -- <strategy|version>
 ```
+
+## My other plugins
+
+- [Food Tracker](https://github.com/forketyfork/obsidian-food-tracker): Track calories, macros, and nutrition totals with database and inline entries.
+- [YouTrack Fetcher](https://github.com/forketyfork/obsidian-youtrack-fetcher): Fetch YouTrack issues into structured notes with templates.
+- [Speech Bubbles](https://github.com/forketyfork/obsidian-speech-bubbles): Render transcript notes as chat-style speech bubbles.
 
 ## License
 
