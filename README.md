@@ -82,6 +82,14 @@ Run the linter:
 pnpm lint
 ```
 
+Run the CSS linter:
+
+```shell
+pnpm lint:css
+```
+
+CSS linting uses Obsidian's official Stylelint configuration, targets the plugin's minimum supported Electron version, and treats review warnings as build failures.
+
 Run the tests:
 
 ```shell
