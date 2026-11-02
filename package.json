@@ -35,14 +35,14 @@
 	},
 	"devDependencies": {
 		"@codemirror/state": "^6.7.6",
-		"@codemirror/view": "^6.43.14",
+		"@codemirror/view": "^6.43.15",
 		"@eslint/js": "^10.0.1",
 		"@eslint/json": "2.1.1",
 		"@types/jest": "^30.0.0",
-		"@types/lodash": "^4.17.26",
+		"@types/lodash": "^4.17.27",
 		"@types/node": "^26.6.5",
-		"@typescript-eslint/eslint-plugin": "^8.71.2",
-		"@typescript-eslint/parser": "^8.71.2",
+		"@typescript-eslint/eslint-plugin": "^8.72.0",
+		"@typescript-eslint/parser": "^8.72.0",
 		"builtin-modules": "^5.4.0",
 		"csso-cli": "^4.0.2",
 		"esbuild": "^0.28.2",
@@ -59,7 +59,7 @@
 		"ts-jest": "^29.4.15",
 		"tslib": "^2.8.1",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.71.2"
+		"typescript-eslint": "^8.72.0"
 	},
 	"packageManager": "pnpm@11.1.2",
 	"dependencies": {
